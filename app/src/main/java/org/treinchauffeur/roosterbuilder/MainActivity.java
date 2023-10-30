@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import org.treinchauffeur.roosterbuilder.io.FileReader;
@@ -19,7 +20,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
 
     public Button selectButton, saveButton;
-    public TextView dataTextView;
+    public EditText dataTextView;
 
     FileReader fileReader;
 
