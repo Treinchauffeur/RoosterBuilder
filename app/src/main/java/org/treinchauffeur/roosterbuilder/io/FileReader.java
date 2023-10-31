@@ -164,21 +164,43 @@ public class FileReader {
 
             formattedLine = formattedLine.split("dag ")[1];
 
+            //This might get screwed up during newyear's. We're not gonna worry about that
+            // right now since this won't be used in a calendar-like application.
             Date shiftDate = sdf.parse(shiftDateString + "-" + yearNumber);
 
             shift.setDateString(shiftDateString);
             shift.setDate(shiftDate);
 
-            //Alright, TODO: We're ready to start processing the actual shifts
-            //String layout is as follows:
-            //MODIFIER SHIFTNUMBER (START:TIME) (END:TIME) (MENTOR/MISC-INFO)
+            //Line layout is currently as follows:
+            //(MODIFIER) SHIFTNUMBER (START:TIME) (END:TIME) (MENTOR/MISC-INFO)
 
-            activity.dataTextView.append(pupil.getName() + ": " + shift.getDateString() + " " + formattedLine  + "\n");
+            String shiftModifier = "";
+            if(isShiftModifier(formattedLine.split(" ")[0])) {
+                shiftModifier = formattedLine.split(" ")[0];
+                formattedLine = formattedLine.split(shiftModifier + " ")[1];
+            }
+            shift.setModifier(shiftModifier);
+
+            String shiftNumber = formattedLine.split(" ")[0];
+            shift.setShiftNumber(shiftNumber);
+
+            //This person has a day off; we're done here.
+            if(isRestingDay(shiftNumber)) continue;
+
+            //We don't care about the start & end times.
+            if(formattedLine.split(" ")[1].contains(":")) {
+                shift.setExtraInfo(formattedLine.split(formattedLine.split(" ")[2])[1]);
+            } else {
+                shift.setExtraInfo(formattedLine.split(formattedLine.split(" ")[0])[1]);
+            }
+
+            activity.dataTextView.append(shift.getPupil().getName() + " on : " + shift.getDateString() +
+                    " has shift nr. " + shift.getModifier() + shift.getShiftNumber()  + " with extra info: " + shift.getExtraInfo() + "\n");
         }
     }
 
     /**
-     * Determines whether a symbol or multiple symbols are shift modifiers.
+     * Determines whether a symbol or multiple symbols are shiftmodifiers.
      * This is necessary in order to properly read each day of the week correctly.
      *
      * @param modifier the given symbol(s).

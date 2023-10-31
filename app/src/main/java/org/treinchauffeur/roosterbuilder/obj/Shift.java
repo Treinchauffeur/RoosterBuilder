@@ -9,6 +9,7 @@ public class Shift {
     private String extraInfo;
     private String modifier; //Ah shi-, here we go again..
     private Date date;
+    private String shiftNumber;
 
     public Shift() {}
 
@@ -50,5 +51,13 @@ public class Shift {
 
     public void setDate(Date date) {
         this.date = date;
+    }
+
+    public String getShiftNumber() {
+        return shiftNumber;
+    }
+
+    public void setShiftNumber(String shiftNumber) {
+        this.shiftNumber = shiftNumber;
     }
 }
