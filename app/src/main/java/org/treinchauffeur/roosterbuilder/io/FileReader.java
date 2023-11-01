@@ -17,6 +17,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public class FileReader {
 
@@ -31,6 +33,10 @@ public class FileReader {
     private String mondayDateString, tuesdayDateString, wednesdayDateString, thursdayDateString,
             fridayDateString, saturdayDateString, sundayDateString;
     private int weekNumber = -1, yearNumber = -1;
+
+    private final ArrayList<String> pupilNames = new ArrayList<>();
+
+    private final HashMap<String, Pupil> pupilsMap = new HashMap<>();
 
     public FileReader(MainActivity activity, Context context) {
         this.activity = activity;
@@ -107,20 +113,19 @@ public class FileReader {
             }
         }
 
-
-        //Second, detailed portion of the file.
-        Pupil pupil = null;
+        Pupil tempPupil = null;
         String pupilName = "";
         activity.dataTextView.setText("");
         for(String rawLine : filteredContents) {
             String formattedLine = rawLine.replaceAll("\\s+", " ");
 
+            //Secondary portion of the file; these shifts are special or contain extra information like a mentor etc.
             //Check whether this line defines a new person
             if(!formattedLine.split(" ")[1].contains("dag") && formattedLine.split(" ")[1].equals(formattedLine.split(" ")[1].toUpperCase())) {
                 pupilName = formattedLine.split(" ")[1];
 
                 //We're checking for infixes and/or multiple initials. If they're there; remove them
-                // and reformat! They'll mess things up later if not.
+                // and reformat! They'll mess things up later if this isn't done.
                 if(!formattedLine.split(" ")[2].contains("dag")) {
                     pupilName += " " + formattedLine.split(" ")[2];
                     formattedLine = formattedLine.replace(formattedLine.split(" ")[2], "");
@@ -133,7 +138,9 @@ public class FileReader {
                         }
                     }
                 }
-                pupil = new Pupil(pupilName);
+                tempPupil = new Pupil(pupilName);
+                pupilNames.add(pupilName);
+                pupilsMap.put(pupilName, tempPupil);
 
                 //Now that we have the name, let's get rid of it for now. Get rid of extra white spaces as well.
                 formattedLine = formattedLine.replace(formattedLine.split(" ")[1], "");
@@ -141,25 +148,32 @@ public class FileReader {
             }
 
             Shift shift = new Shift();
-            assert pupil != null;
-            shift.setPupil(pupil);
+            assert tempPupil != null;
+            shift.setPupil(tempPupil);
 
             String shiftDateString = "";
 
             if(formattedLine.contains("aandag")) {
                 shiftDateString = mondayDateString;
+                shift.setWeekDay(Shift.MAANDAG);
             } else if(formattedLine.contains("Dinsdag")) {
                 shiftDateString = tuesdayDateString;
+                shift.setWeekDay(Shift.DINSDAG);
             } else if(formattedLine.contains("Woensdag")) {
                 shiftDateString = wednesdayDateString;
+                shift.setWeekDay(Shift.WOENSDAG);
             } else if(formattedLine.contains("Donderdag")) {
                 shiftDateString = thursdayDateString;
+                shift.setWeekDay(Shift.DONDERDAG);
             } else if(formattedLine.contains("Vrijdag")) {
                 shiftDateString = fridayDateString;
+                shift.setWeekDay(Shift.VRIJDAG);
             } else if(formattedLine.contains("Zaterdag")) {
                 shiftDateString = saturdayDateString;
+                shift.setWeekDay(Shift.ZATERDAG);
             } else if(formattedLine.contains("Zondag")) {
                 shiftDateString = sundayDateString;
+                shift.setWeekDay(Shift.ZONDAG);
             }
 
             formattedLine = formattedLine.split("dag ")[1];
@@ -194,8 +208,159 @@ public class FileReader {
                 shift.setExtraInfo(formattedLine.split(formattedLine.split(" ")[0])[1]);
             }
 
-            activity.dataTextView.append(shift.getPupil().getName() + " on : " + shift.getDateString() +
-                    " has shift nr. " + shift.getModifier() + shift.getShiftNumber()  + " with extra info: " + shift.getExtraInfo() + "\n");
+            for(Map.Entry<String, Pupil> set : pupilsMap.entrySet()) {
+                Pupil pupil = set.getValue();
+                if(shift.getPupil().getName().equals(pupil.getName())) {
+                    pupil.setShift(shift.getWeekDay(), shift);
+                }
+            }
+        }
+
+        for(String rawLine : fileContents) {
+            String formattedLine = rawLine.replaceAll("\\s+", " ");
+
+            //Primary portion of the file; every person defined has a full week of shifts data (like a shift nr, R or WV)
+            Shift mondayShift, tuesdayShift, wednesdayShift, thursdayShift, fridayShift, saturdayShift, sundayShift;
+            mondayShift = new Shift();
+            tuesdayShift = new Shift();
+            wednesdayShift = new Shift();
+            thursdayShift = new Shift();
+            fridayShift = new Shift();
+            saturdayShift = new Shift();
+            sundayShift = new Shift();
+
+            mondayShift.setDateString(mondayDateString);
+            tuesdayShift.setDateString(tuesdayDateString);
+            wednesdayShift.setDateString(wednesdayDateString);
+            thursdayShift.setDateString(thursdayDateString);
+            fridayShift.setDateString(fridayDateString);
+            saturdayShift.setDateString(saturdayDateString);
+            sundayShift.setDateString(sundayDateString);
+
+            //Check if these are the lines we need; they're all uppercase.
+            //Maybe we need to deploy more checks to make sure.
+            if(formattedLine.toUpperCase().equals(formattedLine)) {
+                if(formattedLine.length() > 0) formattedLine = formattedLine.substring(1);
+                for(String name : pupilNames) {
+                    if(formattedLine.startsWith(name)) {
+
+                        Pupil pupil = new Pupil(name);
+                        formattedLine = formattedLine.split(name + " ")[1];
+
+                        if(isShiftModifier(formattedLine.split(" ")[0])) {
+                            mondayShift.setModifier(formattedLine.split(" ")[0]);
+                            formattedLine = formattedLine.substring(formattedLine.split(" ")[0].length() + 1);
+                        }
+                        mondayShift.setWeekDay(Shift.MAANDAG);
+                        mondayShift.setShiftNumber(formattedLine.split(" ")[0]);
+                        formattedLine = formattedLine.substring(formattedLine.split(" ")[0].length() + 1);
+
+                        if(isShiftModifier(formattedLine.split(" ")[0])) {
+                            tuesdayShift.setModifier(formattedLine.split(" ")[0]);
+                            formattedLine = formattedLine.substring(formattedLine.split(" ")[0].length() + 1);
+                        }
+                        tuesdayShift.setWeekDay(Shift.DINSDAG);
+                        tuesdayShift.setShiftNumber(formattedLine.split(" ")[0]);
+                        formattedLine = formattedLine.substring(formattedLine.split(" ")[0].length() + 1);
+
+                        if(isShiftModifier(formattedLine.split(" ")[0])) {
+                            wednesdayShift.setModifier(formattedLine.split(" ")[0]);
+                            formattedLine = formattedLine.substring(formattedLine.split(" ")[0].length() + 1);
+                        }
+                        wednesdayShift.setWeekDay(Shift.WOENSDAG);
+                        wednesdayShift.setShiftNumber(formattedLine.split(" ")[0]);
+                        formattedLine = formattedLine.substring(formattedLine.split(" ")[0].length() + 1);
+
+                        if(isShiftModifier(formattedLine.split(" ")[0])) {
+                            thursdayShift.setModifier(formattedLine.split(" ")[0]);
+                            formattedLine = formattedLine.substring(formattedLine.split(" ")[0].length() + 1);
+                        }
+                        thursdayShift.setWeekDay(Shift.DONDERDAG);
+                        thursdayShift.setShiftNumber(formattedLine.split(" ")[0]);
+                        formattedLine = formattedLine.substring(formattedLine.split(" ")[0].length() + 1);
+
+                        if(isShiftModifier(formattedLine.split(" ")[0])) {
+                            fridayShift.setModifier(formattedLine.split(" ")[0]);
+                            formattedLine = formattedLine.substring(formattedLine.split(" ")[0].length() + 1);
+                        }
+                        fridayShift.setWeekDay(Shift.VRIJDAG);
+                        fridayShift.setShiftNumber(formattedLine.split(" ")[0]);
+                        formattedLine = formattedLine.substring(formattedLine.split(" ")[0].length() + 1);
+
+                        if(isShiftModifier(formattedLine.split(" ")[0])) {
+                            saturdayShift.setModifier(formattedLine.split(" ")[0]);
+                            formattedLine = formattedLine.substring(formattedLine.split(" ")[0].length() + 1);
+                        }
+                        saturdayShift.setWeekDay(Shift.ZATERDAG);
+                        saturdayShift.setShiftNumber(formattedLine.split(" ")[0]);
+                        formattedLine = formattedLine.substring(formattedLine.split(" ")[0].length() + 1);
+
+                        if(isShiftModifier(formattedLine.split(" ")[0])) {
+                            sundayShift.setModifier(formattedLine.split(" ")[0]);
+                            formattedLine = formattedLine.substring(formattedLine.split(" ")[0].length() + 1);
+                        }
+                        sundayShift.setWeekDay(Shift.ZONDAG);
+                        sundayShift.setShiftNumber(formattedLine.split(" ")[0]);
+
+                        pupil.setShift(Shift.MAANDAG, mondayShift);
+                        pupil.setShift(Shift.DINSDAG, tuesdayShift);
+                        pupil.setShift(Shift.WOENSDAG, wednesdayShift);
+                        pupil.setShift(Shift.DONDERDAG, thursdayShift);
+                        pupil.setShift(Shift.VRIJDAG, fridayShift);
+                        pupil.setShift(Shift.ZATERDAG, saturdayShift);
+                        pupil.setShift(Shift.ZONDAG, sundayShift);
+
+                        if(pupilsMap.containsKey(pupil.getName())) {
+                            for (Map.Entry<String, Pupil> set : pupilsMap.entrySet()) {
+                                Pupil p = set.getValue();
+                                if (pupil.getName().equals(p.getName())) {
+                                    for (Shift toCompare : p.getShifts()) {
+                                        if (toCompare.getShiftNumber().equals("")) {
+                                            switch (toCompare.getWeekDay()) {
+                                                case Shift.MAANDAG:
+                                                    p.setShift(Shift.MAANDAG, mondayShift);
+                                                    break;
+                                                case Shift.DINSDAG:
+                                                    p.setShift(Shift.DINSDAG, tuesdayShift);
+                                                    break;
+                                                case Shift.WOENSDAG:
+                                                    p.setShift(Shift.WOENSDAG, wednesdayShift);
+                                                    break;
+                                                case Shift.DONDERDAG:
+                                                    p.setShift(Shift.DONDERDAG, thursdayShift);
+                                                    break;
+                                                case Shift.VRIJDAG:
+                                                    p.setShift(Shift.VRIJDAG, fridayShift);
+                                                    break;
+                                                case Shift.ZATERDAG:
+                                                    p.setShift(Shift.ZATERDAG, saturdayShift);
+                                                    break;
+                                                case Shift.ZONDAG:
+                                                    p.setShift(Shift.ZONDAG, sundayShift);
+                                                    break;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        } else {
+                            pupilsMap.put(pupil.getName(), pupil);
+                        }
+                    }
+                }
+            }
+        }
+
+        for (Map.Entry<String, Pupil> set : pupilsMap.entrySet()) {
+            Pupil pupil = set.getValue();
+            for(Shift shift : pupil.getShifts()) {
+                if(shift.hasExtra())
+                    activity.dataTextView.append("Aspirant " + pupil.getName() + " heeft dienst " +
+                            shift.getNeatShiftNumber() + " op " + shift.getDateString() + " met extra info: '"+shift.getExtraInfo() + "'\n");
+                else
+                    activity.dataTextView.append("Aspirant " + pupil.getName() + " heeft dienst " +
+                            shift.getNeatShiftNumber() + " op " + shift.getDateString() + "\n");
+            }
         }
     }
 
