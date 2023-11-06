@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    app:strokeWidth="0dp"
+    app:cardCornerRadius="28dp">
+<LinearLayout
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_margin="20dp"
+    android:layout_gravity="center_horizontal"
+    android:orientation="vertical">
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/dialogPupilNameView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:layout_marginVertical="10dp"
+        style="@style/TextAppearance.Material3.TitleLarge"
+        android:text="Aspirant Naam"/>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/pupilNameLayout"
+        android:layout_margin="5dp"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:hint="Volledige Naam">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:text="Aspirant Naam"
+            android:inputType="textPersonName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/pupilPhoneLayout"
+        android:layout_margin="5dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Telefoonnummer">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:inputType="phone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/pupilMailLayout"
+        android:layout_margin="5dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="E-mailadres">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:inputType="textEmailAddress"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/weekHeaderText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="?attr/colorSecondary"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="5dp"
+        android:layout_marginHorizontal="5dp"
+        style="@style/TextAppearance.Material3.BodySmall"
+        android:text="Diensten deze week:"/>
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/mondayShiftText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="5dp"
+        style="@style/TextAppearance.Material3.BodySmall"
+        android:text="Maandag: dienst NaN met mentor NaN."/>
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tuesdayShiftText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="5dp"
+        style="@style/TextAppearance.Material3.BodySmall"
+        android:text="Dinsdag: dienst NaN met mentor NaN."/>
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/wednesdayShiftText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="5dp"
+        style="@style/TextAppearance.Material3.BodySmall"
+        android:text="Woensdag: dienst NaN met mentor NaN."/>
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/thursdayShiftText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="5dp"
+        style="@style/TextAppearance.Material3.BodySmall"
+        android:text="Donderdag: dienst NaN met mentor NaN."/>
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/fridayShiftText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="5dp"
+        style="@style/TextAppearance.Material3.BodySmall"
+        android:text="Vrijdag: dienst NaN met mentor NaN."/>
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/saturdayShiftText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="5dp"
+        style="@style/TextAppearance.Material3.BodySmall"
+        android:text="Zaterdag: dienst NaN met mentor NaN."/>
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/sundayShiftText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="5dp"
+        style="@style/TextAppearance.Material3.BodySmall"
+        android:text="Zondag: dienst NaN met mentor NaN."/>
+
+    <LinearLayout
+        android:layout_marginTop="20dp"
+        android:orientation="horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end">
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/buttonCancelPupil"
+        android:layout_gravity="end"
+        android:backgroundTint="?attr/colorSurface"
+        android:textColor="?attr/colorOnSurface"
+        android:text="ANNULEREN"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/buttonSavePupil"
+        android:layout_gravity="end"
+        android:backgroundTint="?attr/colorSurface"
+        android:textColor="?attr/colorPrimary"
+        android:text="OPSLAAN"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+    </LinearLayout>
+
+
+</LinearLayout>
+</com.google.android.material.card.MaterialCardView>

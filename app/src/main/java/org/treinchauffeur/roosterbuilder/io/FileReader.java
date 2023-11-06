@@ -4,9 +4,12 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
+import android.widget.Toast;
 
 import org.treinchauffeur.roosterbuilder.MainActivity;
 import org.treinchauffeur.roosterbuilder.misc.Logger;
+import org.treinchauffeur.roosterbuilder.misc.Tools;
+import org.treinchauffeur.roosterbuilder.obj.Mentor;
 import org.treinchauffeur.roosterbuilder.obj.Pupil;
 import org.treinchauffeur.roosterbuilder.obj.Shift;
 
@@ -32,22 +35,30 @@ public class FileReader {
 
     private String mondayDateString, tuesdayDateString, wednesdayDateString, thursdayDateString,
             fridayDateString, saturdayDateString, sundayDateString;
-    private int weekNumber = -1, yearNumber = -1;
+    public int weekNumber = -1, yearNumber = -1;
+
+    public ArrayList<Uri> filesUsed = new ArrayList<>();
 
     private final ArrayList<String> pupilNames = new ArrayList<>();
 
-    private final HashMap<String, Pupil> pupilsMap = new HashMap<>();
+
 
     public FileReader(MainActivity activity, Context context) {
         this.activity = activity;
         this.context = context;
     }
 
+    @SuppressLint("SetTextI18n")
     public boolean startReading(Uri uri) {
         boolean success = false;
         int lines = 0;
         fileContents.clear();
         Logger.debug(TAG, "Started reading: "+uri);
+
+        if(filesUsed.contains(uri)) {
+            Toast.makeText(context, "Dit bestand is reeds ingelezen!", Toast.LENGTH_SHORT).show();
+            return false;
+        }
 
         try {
             InputStream inputStream = context.getContentResolver().openInputStream(uri);
@@ -69,9 +80,13 @@ public class FileReader {
                 fileContents.add(reader.readLine());
             }
 
+            filesUsed.add(uri);
+            activity.selectButton.setText("Gelezen bestanden: "+filesUsed.size());
+
             if(fileContents.size() > 9) { //9 is hypothetically the  minimal amount of lines
                 processData();
             }
+            success = true;
         } catch (Exception e) {
             Log.e(TAG, "startReading: ", e);
             return false;
@@ -115,7 +130,6 @@ public class FileReader {
 
         Pupil tempPupil = null;
         String pupilName = "";
-        activity.dataTextView.setText("");
         for(String rawLine : filteredContents) {
             String formattedLine = rawLine.replaceAll("\\s+", " ");
 
@@ -138,9 +152,16 @@ public class FileReader {
                         }
                     }
                 }
+
+                //This is stupid, but DiSys apparently outputs some names with commas instead of spaces..
+                if(pupilName.contains(",")) {
+                    pupilName = pupilName.replace(",", " ");
+                    if(pupilName.endsWith(" ")) pupilName = pupilName.substring(0, pupilName.length() - 1);
+                }
+
                 tempPupil = new Pupil(pupilName);
                 pupilNames.add(pupilName);
-                pupilsMap.put(pupilName, tempPupil);
+                activity.pupilsMap.put(pupilName, tempPupil);
 
                 //Now that we have the name, let's get rid of it for now. Get rid of extra white spaces as well.
                 formattedLine = formattedLine.replace(formattedLine.split(" ")[1], "");
@@ -189,7 +210,7 @@ public class FileReader {
             //(MODIFIER) SHIFTNUMBER (START:TIME) (END:TIME) (MENTOR/MISC-INFO)
 
             String shiftModifier = "";
-            if(isShiftModifier(formattedLine.split(" ")[0])) {
+            if(Tools.isShiftModifier(formattedLine.split(" ")[0])) {
                 shiftModifier = formattedLine.split(" ")[0];
                 formattedLine = formattedLine.split(shiftModifier + " ")[1];
             }
@@ -199,16 +220,36 @@ public class FileReader {
             shift.setShiftNumber(shiftNumber);
 
             //This person has a day off; we're done here.
-            if(isRestingDay(shiftNumber)) continue;
+            if(Tools.isRestingDay(shiftNumber)) continue;
 
-            //We don't care about the start & end times.
+            //We don't care about the start & end times, but we check whether they're there for proper identification.
             if(formattedLine.split(" ")[1].contains(":")) {
-                shift.setExtraInfo(formattedLine.split(formattedLine.split(" ")[2])[1]);
+                shift.setExtraInfo(formattedLine.substring(shift.getShiftNumber().length() + 13));
             } else {
-                shift.setExtraInfo(formattedLine.split(formattedLine.split(" ")[0])[1]);
+                shift.setExtraInfo(formattedLine.substring(shift.getShiftNumber().length() + 1));
             }
 
-            for(Map.Entry<String, Pupil> set : pupilsMap.entrySet()) {
+            if(shift.getExtraInfo().split(" ").length > 1) {
+                try {
+                    int checkId = Integer.parseInt(shift.getExtraInfo().split(" ")[0]);
+                    if(checkId > 10000 && checkId < 1000000) {
+                        String mentorId = shift.getExtraInfo().split(" ")[0];
+                        String mentorName = shift.getExtraInfo().replace(mentorId + " ", "");
+
+                        Mentor mentor;
+                        if(activity.mentorsMap.containsKey(mentorId)) mentor = activity.mentorsMap.get(mentorId);
+                        else {
+                            mentor = new Mentor(mentorId, mentorName);
+                            activity.mentorsMap.put(mentorId, mentor);
+                        }
+                        shift.setMentor(mentor);
+                    }
+                } catch (NumberFormatException e) {
+
+                }
+            }
+
+            for(Map.Entry<String, Pupil> set : activity.pupilsMap.entrySet()) {
                 Pupil pupil = set.getValue();
                 if(shift.getPupil().getName().equals(pupil.getName())) {
                     pupil.setShift(shift.getWeekDay(), shift);
@@ -240,14 +281,16 @@ public class FileReader {
             //Check if these are the lines we need; they're all uppercase.
             //Maybe we need to deploy more checks to make sure.
             if(formattedLine.toUpperCase().equals(formattedLine)) {
+                formattedLine = formattedLine.replaceAll(",", " ");
+                formattedLine = formattedLine.replaceAll("\\s+", " "); //This is stupid.
                 if(formattedLine.length() > 0) formattedLine = formattedLine.substring(1);
                 for(String name : pupilNames) {
-                    if(formattedLine.startsWith(name)) {
+                    if(formattedLine.startsWith(name.toUpperCase())) {
 
                         Pupil pupil = new Pupil(name);
                         formattedLine = formattedLine.split(name + " ")[1];
 
-                        if(isShiftModifier(formattedLine.split(" ")[0])) {
+                        if(Tools.isShiftModifier(formattedLine.split(" ")[0])) {
                             mondayShift.setModifier(formattedLine.split(" ")[0]);
                             formattedLine = formattedLine.substring(formattedLine.split(" ")[0].length() + 1);
                         }
@@ -255,7 +298,7 @@ public class FileReader {
                         mondayShift.setShiftNumber(formattedLine.split(" ")[0]);
                         formattedLine = formattedLine.substring(formattedLine.split(" ")[0].length() + 1);
 
-                        if(isShiftModifier(formattedLine.split(" ")[0])) {
+                        if(Tools.isShiftModifier(formattedLine.split(" ")[0])) {
                             tuesdayShift.setModifier(formattedLine.split(" ")[0]);
                             formattedLine = formattedLine.substring(formattedLine.split(" ")[0].length() + 1);
                         }
@@ -263,7 +306,7 @@ public class FileReader {
                         tuesdayShift.setShiftNumber(formattedLine.split(" ")[0]);
                         formattedLine = formattedLine.substring(formattedLine.split(" ")[0].length() + 1);
 
-                        if(isShiftModifier(formattedLine.split(" ")[0])) {
+                        if(Tools.isShiftModifier(formattedLine.split(" ")[0])) {
                             wednesdayShift.setModifier(formattedLine.split(" ")[0]);
                             formattedLine = formattedLine.substring(formattedLine.split(" ")[0].length() + 1);
                         }
@@ -271,7 +314,7 @@ public class FileReader {
                         wednesdayShift.setShiftNumber(formattedLine.split(" ")[0]);
                         formattedLine = formattedLine.substring(formattedLine.split(" ")[0].length() + 1);
 
-                        if(isShiftModifier(formattedLine.split(" ")[0])) {
+                        if(Tools.isShiftModifier(formattedLine.split(" ")[0])) {
                             thursdayShift.setModifier(formattedLine.split(" ")[0]);
                             formattedLine = formattedLine.substring(formattedLine.split(" ")[0].length() + 1);
                         }
@@ -279,7 +322,7 @@ public class FileReader {
                         thursdayShift.setShiftNumber(formattedLine.split(" ")[0]);
                         formattedLine = formattedLine.substring(formattedLine.split(" ")[0].length() + 1);
 
-                        if(isShiftModifier(formattedLine.split(" ")[0])) {
+                        if(Tools.isShiftModifier(formattedLine.split(" ")[0])) {
                             fridayShift.setModifier(formattedLine.split(" ")[0]);
                             formattedLine = formattedLine.substring(formattedLine.split(" ")[0].length() + 1);
                         }
@@ -287,7 +330,7 @@ public class FileReader {
                         fridayShift.setShiftNumber(formattedLine.split(" ")[0]);
                         formattedLine = formattedLine.substring(formattedLine.split(" ")[0].length() + 1);
 
-                        if(isShiftModifier(formattedLine.split(" ")[0])) {
+                        if(Tools.isShiftModifier(formattedLine.split(" ")[0])) {
                             saturdayShift.setModifier(formattedLine.split(" ")[0]);
                             formattedLine = formattedLine.substring(formattedLine.split(" ")[0].length() + 1);
                         }
@@ -295,7 +338,7 @@ public class FileReader {
                         saturdayShift.setShiftNumber(formattedLine.split(" ")[0]);
                         formattedLine = formattedLine.substring(formattedLine.split(" ")[0].length() + 1);
 
-                        if(isShiftModifier(formattedLine.split(" ")[0])) {
+                        if(Tools.isShiftModifier(formattedLine.split(" ")[0])) {
                             sundayShift.setModifier(formattedLine.split(" ")[0]);
                             formattedLine = formattedLine.substring(formattedLine.split(" ")[0].length() + 1);
                         }
@@ -310,8 +353,8 @@ public class FileReader {
                         pupil.setShift(Shift.ZATERDAG, saturdayShift);
                         pupil.setShift(Shift.ZONDAG, sundayShift);
 
-                        if(pupilsMap.containsKey(pupil.getName())) {
-                            for (Map.Entry<String, Pupil> set : pupilsMap.entrySet()) {
+                        if(activity.pupilsMap.containsKey(pupil.getName())) {
+                            for (Map.Entry<String, Pupil> set : activity.pupilsMap.entrySet()) {
                                 Pupil p = set.getValue();
                                 if (pupil.getName().equals(p.getName())) {
                                     for (Shift toCompare : p.getShifts()) {
@@ -339,107 +382,48 @@ public class FileReader {
                                                     p.setShift(Shift.ZONDAG, sundayShift);
                                                     break;
                                             }
+                                        } else {
+                                            if(Tools.isNonRegularShiftNumber(toCompare.getShiftNumber())) continue;
+                                            switch (toCompare.getWeekDay()) {
+                                                case Shift.MAANDAG:
+                                                    if(!toCompare.getShiftNumber().equals(mondayShift.getShiftNumber()))
+                                                        p.getShift(Shift.MAANDAG).setShiftNumber(mondayShift.getShiftNumber());
+                                                    break;
+                                                case Shift.DINSDAG:
+                                                    if(!toCompare.getShiftNumber().equals(tuesdayShift.getShiftNumber()))
+                                                        p.getShift(Shift.DINSDAG).setShiftNumber(tuesdayShift.getShiftNumber());
+                                                    break;
+                                                case Shift.WOENSDAG:
+                                                    if(!toCompare.getShiftNumber().equals(wednesdayShift.getShiftNumber()))
+                                                        p.getShift(Shift.WOENSDAG).setShiftNumber(wednesdayShift.getShiftNumber());
+                                                    break;
+                                                case Shift.DONDERDAG:
+                                                    if(!toCompare.getShiftNumber().equals(thursdayShift.getShiftNumber()))
+                                                        p.getShift(Shift.DONDERDAG).setShiftNumber(thursdayShift.getShiftNumber());
+                                                    break;
+                                                case Shift.VRIJDAG:
+                                                    if(!toCompare.getShiftNumber().equals(fridayShift.getShiftNumber()))
+                                                        p.getShift(Shift.VRIJDAG).setShiftNumber(fridayShift.getShiftNumber());
+                                                    break;
+                                                case Shift.ZATERDAG:
+                                                    if(!toCompare.getShiftNumber().equals(saturdayShift.getShiftNumber()))
+                                                        p.getShift(Shift.ZATERDAG).setShiftNumber(saturdayShift.getShiftNumber());
+                                                    break;
+                                                case Shift.ZONDAG:
+                                                    if(!toCompare.getShiftNumber().equals(sundayShift.getShiftNumber()))
+                                                        p.getShift(Shift.ZONDAG).setShiftNumber(sundayShift.getShiftNumber());
+                                                    break;
+                                            }
                                         }
                                     }
                                 }
                             }
                         } else {
-                            pupilsMap.put(pupil.getName(), pupil);
+                            activity.pupilsMap.put(pupil.getName(), pupil);
                         }
                     }
                 }
             }
-        }
-
-        for (Map.Entry<String, Pupil> set : pupilsMap.entrySet()) {
-            Pupil pupil = set.getValue();
-            for(Shift shift : pupil.getShifts()) {
-                if(shift.hasExtra())
-                    activity.dataTextView.append("Aspirant " + pupil.getName() + " heeft dienst " +
-                            shift.getNeatShiftNumber() + " op " + shift.getDateString() + " met extra info: '"+shift.getExtraInfo() + "'\n");
-                else
-                    activity.dataTextView.append("Aspirant " + pupil.getName() + " heeft dienst " +
-                            shift.getNeatShiftNumber() + " op " + shift.getDateString() + "\n");
-            }
-        }
-    }
-
-    /**
-     * Determines whether a symbol or multiple symbols are shiftmodifiers.
-     * This is necessary in order to properly read each day of the week correctly.
-     *
-     * @param modifier the given symbol(s).
-     * @return whether it is a shift modifier or not.
-     * <p>
-     * Known modifiers for Regio Twente:
-     * # Guaranteed
-     * > Pupil
-     * E Extra
-     * *
-     * !
-     * @
-     */
-    public static boolean isShiftModifier(String modifier) {
-        switch (modifier) {
-            case "!":
-            case "@":
-            case ">":
-            case "<":
-            case "*":
-            case "?":
-            case "E":
-            case "#":
-            case "$":
-            case "%":
-            case "=":
-            case "P":
-            case "P!":
-            case "P@":
-            case "P>":
-            case "P<":
-            case "P*":
-            case "P?":
-            case "PE":
-            case "P#":
-            case "P$":
-            case "P%":
-            case "P=":
-            case "E!":
-            case "E@":
-            case "E>":
-            case "E<":
-            case "E*":
-            case "E?":
-            case "E#":
-            case "E$":
-            case "E%":
-            case "E=":
-                return true;
-            default:
-                return false;
-
-        }
-    }
-
-    /**
-     * Determines whether a shift number (or rather a title?) is a day off, and should be listed as a shift or not.
-     *
-     * @param shiftNumber the given shift number to check.
-     * @return whether it should be listed or not.
-     */
-    private static boolean isRestingDay(String shiftNumber) {
-        switch (shiftNumber.toLowerCase()) {
-            case "r":
-            case "streepjesdag":
-            case "vl":
-            case "gvl":
-            case "wa":
-            case "wr":
-            case "wv":
-            case "co":
-                return true;
-            default:
-                return false;
         }
     }
 

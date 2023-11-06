@@ -1,17 +1,24 @@
 package org.treinchauffeur.roosterbuilder.obj;
 
+import androidx.annotation.NonNull;
+
+import org.treinchauffeur.roosterbuilder.misc.Logger;
+import org.treinchauffeur.roosterbuilder.misc.Tools;
+
 import java.util.Date;
 import java.util.Objects;
 
 public class Shift {
 
-    private String dateString;
+    public static final String TAG = "Shift";
+    private String dateString = "";
     private Pupil pupil;
     private String extraInfo = "";
     private String modifier = "";
     private Date date;
     private String shiftNumber = "";
-    private int weekDay;
+    private int weekDay = -1;
+    private Mentor mentor = null;
 
     public static final int MAANDAG = 0, DINSDAG = 1, WOENSDAG = 2, DONDERDAG = 3, VRIJDAG = 4, ZATERDAG = 5, ZONDAG = 6;
 
@@ -81,30 +88,40 @@ public class Shift {
         return !Objects.equals(extraInfo, "");
     }
 
+    public boolean withMentor() {
+        return !Objects.equals(mentor, null);
+    }
+
+    public Mentor getMentor() {
+        return mentor;
+    }
+
+    public void setMentor(Mentor mentor) {
+        this.mentor = mentor;
+    }
+
     public String getNeatShiftNumber() {
         if(shiftNumber.endsWith("H"))
             return "Hgl "+modifier+shiftNumber.split("H")[0];
-        else if(!isNonRegularShiftNumber())
+        if(shiftNumber.toUpperCase().contains("TWO")) return shiftNumber;
+        if(shiftNumber.equals("W")) return "Wegleren";
+        if(shiftNumber.toUpperCase().contains("MAT")) return "Materieel";
+        if(shiftNumber.toUpperCase().contains("CURS") && extraInfo.toLowerCase().contains("zelfstudie")) return "Zelfstudiedag";
+        else if(!Tools.isNonRegularShiftNumber(shiftNumber))
             return "Es "+modifier+shiftNumber;
-        else
-            return modifier+shiftNumber;
+        else {
+            return modifier + shiftNumber;
+        }
     }
 
-    private boolean isNonRegularShiftNumber() {
-        switch (shiftNumber.toLowerCase()) {
-            case "r":
-            case "streepjesdag":
-            case "vl":
-            case "gvl":
-            case "wa":
-            case "wr":
-            case "wv":
-            case "co":
-            case "w":
-            case "curs":
-                return true;
-            default:
-                return false;
-        }
+    @NonNull
+    @Override
+    public String toString() {
+        if(withMentor())
+            return dateString + ": dienst " + getNeatShiftNumber() + " met mentor: '" + getMentor().getName() + "'";
+        else if(hasExtra())
+            return dateString + ": dienst " + getNeatShiftNumber() + " met extra info: '"+getExtraInfo() + "'";
+        else
+            return dateString + ": dienst " + getNeatShiftNumber();
     }
 }
