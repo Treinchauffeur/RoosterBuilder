@@ -84,12 +84,14 @@ public class MentorDialog extends Dialog {
                     address = address.replace("ü", "ue");
                     address = address.replace("ä", "ae");
                     address = address.replace("ö", "oe");
+                    address = address.replace("ë", "e");
                     Objects.requireNonNull(emailField.getEditText()).setText(address);
                 } else {
                     Objects.requireNonNull(emailField.getEditText()).setText(mentor.generateApproxEmailAddress());
                 }
             }
         });
+
         phoneNumberField.getEditText().setOnFocusChangeListener((v, hasFocus) -> {
             if (phoneNumberField.getEditText().getText().length() < 2) {
                 Objects.requireNonNull(phoneNumberField.getEditText()).setText("06");
@@ -131,6 +133,7 @@ public class MentorDialog extends Dialog {
 
             dismiss();
             activity.displayData();
+            activity.saveData();
         });
 
         buttonCancel.setOnClickListener(v -> dismiss());

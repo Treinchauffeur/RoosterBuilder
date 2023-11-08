@@ -122,7 +122,8 @@ public class FileReader {
                     && !formattedLine.startsWith(" Personeelslid") && !formattedLine.startsWith(" ---")
                     && !formattedLine.startsWith(" Toelichting:") && !(formattedLine.split(" ").length < 3)) {
                 if(formattedLine.split(" ")[1].contains("dag") || formattedLine.split(" ")[2].contains("dag")
-                        || formattedLine.split(" ")[3].contains("dag") || formattedLine.split(" ")[4].contains("dag")) {
+                        || formattedLine.split(" ")[3].contains("dag") || formattedLine.split(" ")[4].contains("dag")
+                        || formattedLine.split(" ")[5].contains("dag")) {
                     filteredContents.add(formattedLine);
                 }
             }
@@ -132,7 +133,6 @@ public class FileReader {
         String pupilName = "";
         for(String rawLine : filteredContents) {
             String formattedLine = rawLine.replaceAll("\\s+", " ");
-
             //Secondary portion of the file; these shifts are special or contain extra information like a mentor etc.
             //Check whether this line defines a new person
             if(!formattedLine.split(" ")[1].contains("dag") && formattedLine.split(" ")[1].equals(formattedLine.split(" ")[1].toUpperCase())) {
@@ -149,6 +149,7 @@ public class FileReader {
                         if(!formattedLine.split(" ")[4].contains("dag")) {
                             pupilName += " " + formattedLine.split(" ")[4];
                             formattedLine = formattedLine.replace(formattedLine.split(" ")[4], "");
+
                         }
                     }
                 }
@@ -210,9 +211,9 @@ public class FileReader {
             //(MODIFIER) SHIFTNUMBER (START:TIME) (END:TIME) (MENTOR/MISC-INFO)
 
             String shiftModifier = "";
-            if(Tools.isShiftModifier(formattedLine.split(" ")[0])) {
+            if(Tools.isShiftModifier(formattedLine.split(" ")[0]) && !formattedLine.split(" ")[1].contains(":")) {
                 shiftModifier = formattedLine.split(" ")[0];
-                formattedLine = formattedLine.split(shiftModifier + " ")[1];
+                formattedLine = formattedLine.substring(shiftModifier.length() + 1);
             }
             shift.setModifier(shiftModifier);
 
@@ -223,7 +224,7 @@ public class FileReader {
             if(Tools.isRestingDay(shiftNumber)) continue;
 
             //We don't care about the start & end times, but we check whether they're there for proper identification.
-            if(formattedLine.split(" ")[1].contains(":")) {
+            if(formattedLine.split(" ")[1].contains(":") && formattedLine.split(" ").length > 3) {
                 shift.setExtraInfo(formattedLine.substring(shift.getShiftNumber().length() + 13));
             } else {
                 shift.setExtraInfo(formattedLine.substring(shift.getShiftNumber().length() + 1));
@@ -237,7 +238,8 @@ public class FileReader {
                         String mentorName = shift.getExtraInfo().replace(mentorId + " ", "");
 
                         Mentor mentor;
-                        if(activity.mentorsMap.containsKey(mentorId)) mentor = activity.mentorsMap.get(mentorId);
+                        if(activity.mentorsMap.containsKey(mentorId))
+                            mentor = activity.mentorsMap.get(mentorId);
                         else {
                             mentor = new Mentor(mentorId, mentorName);
                             activity.mentorsMap.put(mentorId, mentor);
@@ -245,7 +247,7 @@ public class FileReader {
                         shift.setMentor(mentor);
                     }
                 } catch (NumberFormatException e) {
-
+                    //The given string is not an integer, therefor this information needn't be changed.
                 }
             }
 
@@ -290,7 +292,7 @@ public class FileReader {
                         Pupil pupil = new Pupil(name);
                         formattedLine = formattedLine.split(name + " ")[1];
 
-                        if(Tools.isShiftModifier(formattedLine.split(" ")[0])) {
+                        if(Tools.isShiftModifier(formattedLine.split(" ")[0]) && formattedLine.split(" ").length > 6) {
                             mondayShift.setModifier(formattedLine.split(" ")[0]);
                             formattedLine = formattedLine.substring(formattedLine.split(" ")[0].length() + 1);
                         }
@@ -298,7 +300,7 @@ public class FileReader {
                         mondayShift.setShiftNumber(formattedLine.split(" ")[0]);
                         formattedLine = formattedLine.substring(formattedLine.split(" ")[0].length() + 1);
 
-                        if(Tools.isShiftModifier(formattedLine.split(" ")[0])) {
+                        if(Tools.isShiftModifier(formattedLine.split(" ")[0]) && formattedLine.split(" ").length > 6) {
                             tuesdayShift.setModifier(formattedLine.split(" ")[0]);
                             formattedLine = formattedLine.substring(formattedLine.split(" ")[0].length() + 1);
                         }
@@ -306,7 +308,7 @@ public class FileReader {
                         tuesdayShift.setShiftNumber(formattedLine.split(" ")[0]);
                         formattedLine = formattedLine.substring(formattedLine.split(" ")[0].length() + 1);
 
-                        if(Tools.isShiftModifier(formattedLine.split(" ")[0])) {
+                        if(Tools.isShiftModifier(formattedLine.split(" ")[0]) && formattedLine.split(" ").length > 5) {
                             wednesdayShift.setModifier(formattedLine.split(" ")[0]);
                             formattedLine = formattedLine.substring(formattedLine.split(" ")[0].length() + 1);
                         }
@@ -314,7 +316,7 @@ public class FileReader {
                         wednesdayShift.setShiftNumber(formattedLine.split(" ")[0]);
                         formattedLine = formattedLine.substring(formattedLine.split(" ")[0].length() + 1);
 
-                        if(Tools.isShiftModifier(formattedLine.split(" ")[0])) {
+                        if(Tools.isShiftModifier(formattedLine.split(" ")[0]) && formattedLine.split(" ").length > 4) {
                             thursdayShift.setModifier(formattedLine.split(" ")[0]);
                             formattedLine = formattedLine.substring(formattedLine.split(" ")[0].length() + 1);
                         }
@@ -322,7 +324,7 @@ public class FileReader {
                         thursdayShift.setShiftNumber(formattedLine.split(" ")[0]);
                         formattedLine = formattedLine.substring(formattedLine.split(" ")[0].length() + 1);
 
-                        if(Tools.isShiftModifier(formattedLine.split(" ")[0])) {
+                        if(Tools.isShiftModifier(formattedLine.split(" ")[0]) && formattedLine.split(" ").length > 3) {
                             fridayShift.setModifier(formattedLine.split(" ")[0]);
                             formattedLine = formattedLine.substring(formattedLine.split(" ")[0].length() + 1);
                         }
@@ -330,7 +332,7 @@ public class FileReader {
                         fridayShift.setShiftNumber(formattedLine.split(" ")[0]);
                         formattedLine = formattedLine.substring(formattedLine.split(" ")[0].length() + 1);
 
-                        if(Tools.isShiftModifier(formattedLine.split(" ")[0])) {
+                        if(Tools.isShiftModifier(formattedLine.split(" ")[0]) && formattedLine.split(" ").length > 2) {
                             saturdayShift.setModifier(formattedLine.split(" ")[0]);
                             formattedLine = formattedLine.substring(formattedLine.split(" ")[0].length() + 1);
                         }
@@ -338,7 +340,7 @@ public class FileReader {
                         saturdayShift.setShiftNumber(formattedLine.split(" ")[0]);
                         formattedLine = formattedLine.substring(formattedLine.split(" ")[0].length() + 1);
 
-                        if(Tools.isShiftModifier(formattedLine.split(" ")[0])) {
+                        if(Tools.isShiftModifier(formattedLine.split(" ")[0]) && formattedLine.split(" ").length > 1) {
                             sundayShift.setModifier(formattedLine.split(" ")[0]);
                             formattedLine = formattedLine.substring(formattedLine.split(" ")[0].length() + 1);
                         }
@@ -353,6 +355,8 @@ public class FileReader {
                         pupil.setShift(Shift.ZATERDAG, saturdayShift);
                         pupil.setShift(Shift.ZONDAG, sundayShift);
 
+                        //Now let's merge both parts. If we have a shift from the more detailed part,
+                        // we're not gonna input these shifts if the pupil already has one on that certain day
                         if(activity.pupilsMap.containsKey(pupil.getName())) {
                             for (Map.Entry<String, Pupil> set : activity.pupilsMap.entrySet()) {
                                 Pupil p = set.getValue();
@@ -383,6 +387,7 @@ public class FileReader {
                                                     break;
                                             }
                                         } else {
+                                            //Not really sure what we're doing here..
                                             if(Tools.isNonRegularShiftNumber(toCompare.getShiftNumber())) continue;
                                             switch (toCompare.getWeekDay()) {
                                                 case Shift.MAANDAG:

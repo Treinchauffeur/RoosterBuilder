@@ -120,6 +120,7 @@ public class PupilDialog extends Dialog {
 
             dismiss();
             activity.displayData();
+            activity.saveData();
         });
 
         buttonCancel.setOnClickListener(v -> dismiss());

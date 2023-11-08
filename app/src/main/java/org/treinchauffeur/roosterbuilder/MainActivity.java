@@ -90,6 +90,11 @@ public class MainActivity extends AppCompatActivity {
             startActivityForResult(intent, PICK_FILE_REQUEST);
         });
 
+        selectButton.setOnLongClickListener(v -> {
+            reset();
+            return false;
+        });
+
         Intent intent = getIntent();
         if (Objects.equals(intent.getAction(), Intent.ACTION_VIEW)) {
             Uri fileUri = intent.getData();
@@ -227,7 +232,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        saveData();
+        //saveData();
     }
 
     public void saveData() {
@@ -244,7 +249,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void reset() {
+        Toast.makeText(this, "Resetting..", Toast.LENGTH_SHORT).show();
         pupilsMap.clear();
+        pupilsLayout.removeAllViews();
+        mentorsLayout.removeAllViews();
         mainCardView.setVisibility(View.GONE);
     }
 }

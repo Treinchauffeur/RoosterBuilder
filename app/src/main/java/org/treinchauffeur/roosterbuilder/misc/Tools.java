@@ -85,6 +85,7 @@ public class Tools {
             case "wr":
             case "wv":
             case "co":
+            case "ro":
                 return true;
             default:
                 return false;
@@ -101,8 +102,10 @@ public class Tools {
             case "wr":
             case "wv":
             case "co":
+            case "ro":
             case "w":
             case "curs":
+            case "p":
                 return true;
             default:
                 return false;

@@ -103,9 +103,16 @@ public class Shift {
     public String getNeatShiftNumber() {
         if(shiftNumber.endsWith("H"))
             return "Hgl "+modifier+shiftNumber.split("H")[0];
+        else if(shiftNumber.endsWith("E"))
+            return "Es "+modifier+shiftNumber.substring(0, shiftNumber.length()-1);
         if(shiftNumber.toUpperCase().contains("TWO")) return shiftNumber;
-        if(shiftNumber.equals("W")) return "Wegleren";
-        if(shiftNumber.toUpperCase().contains("MAT")) return "Materieel";
+        if(shiftNumber.equals("W")) return "wegleren";
+        if(shiftNumber.equals("VL")) return "verlof";
+        if(shiftNumber.equals("GVL")) return "verlof";
+        if(shiftNumber.equals("R")) return "rustdag";
+        if(shiftNumber.equals("CURS")) return "cursus";
+        if(shiftNumber.equals("WV") || shiftNumber.equals("WA") || shiftNumber.equals("WR")) return "WTV dag";
+        if(shiftNumber.toUpperCase().contains("MAT")) return "materieel";
         if(shiftNumber.toUpperCase().contains("CURS") && extraInfo.toLowerCase().contains("zelfstudie")) return "Zelfstudiedag";
         else if(!Tools.isNonRegularShiftNumber(shiftNumber))
             return "Es "+modifier+shiftNumber;
@@ -114,13 +121,19 @@ public class Shift {
         }
     }
 
+    private boolean isRestingDay() {
+        return Tools.isRestingDay(shiftNumber);
+    }
+
     @NonNull
     @Override
     public String toString() {
+        if(isRestingDay())
+            return dateString + ": geen dienst (" + shiftNumber + ")";
         if(withMentor())
             return dateString + ": dienst " + getNeatShiftNumber() + " met mentor: '" + getMentor().getName() + "'";
         else if(hasExtra())
-            return dateString + ": dienst " + getNeatShiftNumber() + " met extra info: '"+getExtraInfo() + "'";
+            return dateString + ": dienst " + getNeatShiftNumber() + " met extra info: '"+extraInfo + "'";
         else
             return dateString + ": dienst " + getNeatShiftNumber();
     }
