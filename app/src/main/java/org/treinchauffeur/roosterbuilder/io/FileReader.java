@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import org.treinchauffeur.roosterbuilder.MainActivity;
@@ -12,6 +13,7 @@ import org.treinchauffeur.roosterbuilder.misc.Tools;
 import org.treinchauffeur.roosterbuilder.obj.Mentor;
 import org.treinchauffeur.roosterbuilder.obj.Pupil;
 import org.treinchauffeur.roosterbuilder.obj.Shift;
+import org.treinchauffeur.roosterbuilder.obj.StoredPupil;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -64,7 +66,6 @@ public class FileReader {
             InputStream inputStream = context.getContentResolver().openInputStream(uri);
             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
 
-
             while (reader.readLine() != null) lines++;
             reader.close();
             assert inputStream != null;
@@ -81,10 +82,11 @@ public class FileReader {
             }
 
             filesUsed.add(uri);
-            activity.selectButton.setText("Gelezen bestanden: "+filesUsed.size());
+            activity.selectButton.setVisibility(View.GONE);
 
             if(fileContents.size() > 9) { //9 is hypothetically the  minimal amount of lines
                 processData();
+                success = activity.pupilsMap.size() > 0;
             }
             success = true;
         } catch (Exception e) {
@@ -224,32 +226,14 @@ public class FileReader {
             if(Tools.isRestingDay(shiftNumber)) continue;
 
             //We don't care about the start & end times, but we check whether they're there for proper identification.
-            if(formattedLine.split(" ")[1].contains(":") && formattedLine.split(" ").length > 3) {
-                shift.setExtraInfo(formattedLine.substring(shift.getShiftNumber().length() + 13));
-            } else {
-                shift.setExtraInfo(formattedLine.substring(shift.getShiftNumber().length() + 1));
-            }
-
-            if(shift.getExtraInfo().split(" ").length > 1) {
-                try {
-                    int checkId = Integer.parseInt(shift.getExtraInfo().split(" ")[0]);
-                    if(checkId > 10000 && checkId < 1000000) {
-                        String mentorId = shift.getExtraInfo().split(" ")[0];
-                        String mentorName = shift.getExtraInfo().replace(mentorId + " ", "");
-
-                        Mentor mentor;
-                        if(activity.mentorsMap.containsKey(mentorId))
-                            mentor = activity.mentorsMap.get(mentorId);
-                        else {
-                            mentor = new Mentor(mentorId, mentorName);
-                            activity.mentorsMap.put(mentorId, mentor);
-                        }
-                        shift.setMentor(mentor);
-                    }
-                } catch (NumberFormatException e) {
-                    //The given string is not an integer, therefor this information needn't be changed.
+            if(formattedLine.split(" ").length > 1) {
+                if (formattedLine.split(" ")[1].contains(":") && formattedLine.split(" ").length > 3) {
+                    shift.setExtraInfo(formattedLine.substring(shift.getShiftNumber().length() + 13));
+                } else {
+                    shift.setExtraInfo(formattedLine.substring(shift.getShiftNumber().length() + 1));
                 }
             }
+
 
             for(Map.Entry<String, Pupil> set : activity.pupilsMap.entrySet()) {
                 Pupil pupil = set.getValue();
@@ -286,9 +270,19 @@ public class FileReader {
                 formattedLine = formattedLine.replaceAll(",", " ");
                 formattedLine = formattedLine.replaceAll("\\s+", " "); //This is stupid.
                 if(formattedLine.length() > 0) formattedLine = formattedLine.substring(1);
+
+                //Add the pupils that we know from previous sessions, but don't have any shifts with special information this week
+                //This is a flaw in my system, however otherwise there's no way of confidently reading those names.
+                //It doesn't really matter that much anyways since all regular shifts will have a mentor specified in the 'special information' bits.
+                for (Map.Entry<String, StoredPupil> set : activity.savedPupils.entrySet()) {
+                    StoredPupil pupil = set.getValue();
+                    if(formattedLine.startsWith(pupil.getSavedName().toUpperCase())) {
+                        pupilNames.add(pupil.getSavedName());
+                    }
+                }
+
                 for(String name : pupilNames) {
                     if(formattedLine.startsWith(name.toUpperCase())) {
-
                         Pupil pupil = new Pupil(name);
                         formattedLine = formattedLine.split(name + " ")[1];
 
@@ -387,6 +381,21 @@ public class FileReader {
                                                     break;
                                             }
                                         } else {
+                                            if(toCompare.getWeekDay() == Shift.MAANDAG)
+                                                mondayShift.setExtraInfo(toCompare.getExtraInfo());
+                                            if(toCompare.getWeekDay() == Shift.DINSDAG)
+                                                tuesdayShift.setExtraInfo(toCompare.getExtraInfo());
+                                            if(toCompare.getWeekDay() == Shift.WOENSDAG)
+                                             wednesdayShift.setExtraInfo(toCompare.getExtraInfo());
+                                            if(toCompare.getWeekDay() == Shift.DONDERDAG)
+                                                thursdayShift.setExtraInfo(toCompare.getExtraInfo());
+                                            if(toCompare.getWeekDay() == Shift.VRIJDAG)
+                                                fridayShift.setExtraInfo(toCompare.getExtraInfo());
+                                            if(toCompare.getWeekDay() == Shift.ZATERDAG)
+                                                saturdayShift.setExtraInfo(toCompare.getExtraInfo());
+                                            if(toCompare.getWeekDay() == Shift.ZONDAG)
+                                                sundayShift.setExtraInfo(toCompare.getExtraInfo());
+
                                             //Not really sure what we're doing here..
                                             if(Tools.isNonRegularShiftNumber(toCompare.getShiftNumber())) continue;
                                             switch (toCompare.getWeekDay()) {
@@ -423,6 +432,7 @@ public class FileReader {
                                     }
                                 }
                             }
+                            activity.pupilsMap.put(pupil.getName(), pupil);
                         } else {
                             activity.pupilsMap.put(pupil.getName(), pupil);
                         }

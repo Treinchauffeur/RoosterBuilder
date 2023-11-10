@@ -38,6 +38,7 @@ import org.treinchauffeur.roosterbuilder.ui.PupilDialog;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.TreeMap;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -54,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
 
     public final HashMap<String, Pupil> pupilsMap = new HashMap<>(); //Name as key
 
-    public final HashMap<String, Mentor> mentorsMap = new HashMap<>(); //Id as key.
+    public static final HashMap<String, Mentor> mentorsMap = new HashMap<>(); //Id as key.
 
     public HashMap<String, StoredPupil> savedPupils = new HashMap<>();
 
@@ -101,6 +102,8 @@ public class MainActivity extends AppCompatActivity {
             fileReceived(fileUri);
         }
 
+        loadSavedPupils();
+
     }
 
     /**
@@ -141,15 +144,25 @@ public class MainActivity extends AppCompatActivity {
             }
 
             pupilsLayout.removeAllViews();
-            for (Map.Entry<String, Pupil> set : pupilsMap.entrySet()) {
+            TreeMap<String, Pupil> sortedPupilMap = new TreeMap<>();
+            sortedPupilMap.putAll(pupilsMap);
+
+            for (Map.Entry<String, Pupil> set : sortedPupilMap.entrySet()) {
                 Pupil pupil = set.getValue();
 
                 Chip newChip = new Chip(this);
                 newChip.setText(pupil.getNeatName());
+                newChip.setChipStartPadding(0);
+                newChip.setChipEndPadding(0);
+
+                if(pupil.hasWeekOff())
+                    newChip.setEnabled(false);
+
                 newChip.setOnClickListener(v -> {
                     PupilDialog dialog = new PupilDialog(this, MainActivity.this, pupil);
                     dialog.show();
                 });
+
                 LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.WRAP_CONTENT,
                         LinearLayout.LayoutParams.WRAP_CONTENT);
@@ -167,7 +180,10 @@ public class MainActivity extends AppCompatActivity {
             }
 
             mentorsLayout.removeAllViews();
-            for (Map.Entry<String, Mentor> set : mentorsMap.entrySet()) {
+            TreeMap<String, Mentor> sortedMentorMap = new TreeMap<>();
+            sortedMentorMap.putAll(mentorsMap);
+
+            for (Map.Entry<String, Mentor> set : sortedMentorMap.entrySet()) {
                 Mentor mentor = set.getValue();
 
                 Chip newChip = new Chip(this);
@@ -199,10 +215,8 @@ public class MainActivity extends AppCompatActivity {
 
     public void syncSavedPupils() {
         SharedPreferences sharedPreferences = getSharedPreferences("RoosterBot", MODE_PRIVATE);
-        String defValue = new Gson().toJson(new HashMap<String, StoredPupil>());
-        String json=sharedPreferences.getString("SavedPupilsMap",defValue);
-        TypeToken<HashMap<String,StoredPupil>> token = new TypeToken<HashMap<String,StoredPupil>>() {};
-        savedPupils = new Gson().fromJson(json,token.getType());
+
+        loadSavedPupils();
 
         String mentorValue = new Gson().toJson(new HashMap<String, Mentor>());
         String mentorJson = sharedPreferences.getString("SavedMentorMap",mentorValue);
@@ -231,8 +245,6 @@ public class MainActivity extends AppCompatActivity {
                 mentor.setPhoneNumber(Objects.requireNonNull(tempMap.get(mentor.getId())).getPhoneNumber());
             }
         }
-
-        //saveData();
     }
 
     public void saveData() {
@@ -254,5 +266,13 @@ public class MainActivity extends AppCompatActivity {
         pupilsLayout.removeAllViews();
         mentorsLayout.removeAllViews();
         mainCardView.setVisibility(View.GONE);
+    }
+
+    public void loadSavedPupils() {
+        SharedPreferences sharedPreferences = getSharedPreferences("RoosterBot", MODE_PRIVATE);
+        String defValue = new Gson().toJson(new HashMap<String, StoredPupil>());
+        String json=sharedPreferences.getString("SavedPupilsMap",defValue);
+        TypeToken<HashMap<String,StoredPupil>> token = new TypeToken<HashMap<String,StoredPupil>>() {};
+        savedPupils = new Gson().fromJson(json,token.getType());
     }
 }

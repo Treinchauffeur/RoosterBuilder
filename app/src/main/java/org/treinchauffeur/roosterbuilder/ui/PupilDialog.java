@@ -73,9 +73,21 @@ public class PupilDialog extends Dialog {
         //If no email is known, we'll help the user along by generating a part of it. Same goes for phone number.
         emailField.getEditText().setOnFocusChangeListener((v, hasFocus) -> {
             if (emailField.getEditText().getText().length() < 2) {
+                if (fullNameField.getEditText().getText().toString().length() > pupil.getName().length()) {
+                    String address = fullNameField.getEditText().getText().toString().toLowerCase() + "@ns.nl";
+                    address = address.replaceFirst(" ", ".");
+                    address = address.replace(" ", "");
+                    address = address.replace("ü", "ue");
+                    address = address.replace("ä", "ae");
+                    address = address.replace("ö", "oe");
+                    address = address.replace("ë", "e");
+                    Objects.requireNonNull(emailField.getEditText()).setText(address);
+                } else {
                     Objects.requireNonNull(emailField.getEditText()).setText(pupil.generateApproxEmailAddress());
+                }
             }
         });
+
         phoneNumberField.getEditText().setOnFocusChangeListener((v, hasFocus) -> {
             if (phoneNumberField.getEditText().getText().length() < 2) {
                 Objects.requireNonNull(phoneNumberField.getEditText()).setText("06");

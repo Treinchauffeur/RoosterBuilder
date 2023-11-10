@@ -78,7 +78,7 @@ public class Tools {
     public static boolean isRestingDay(String shiftNumber) {
         switch (shiftNumber.toLowerCase()) {
             case "r":
-            case "streepjesdag":
+            case "==":
             case "vl":
             case "gvl":
             case "wa":
@@ -95,10 +95,12 @@ public class Tools {
     public static boolean isNonRegularShiftNumber(String shiftNumber) {
         switch (shiftNumber.toLowerCase()) {
             case "r":
-            case "streepjesdag":
+            case "==":
             case "vl":
             case "gvl":
             case "wa":
+            case "ba":
+            case "eg":
             case "wr":
             case "wv":
             case "co":
@@ -106,6 +108,24 @@ public class Tools {
             case "w":
             case "curs":
             case "p":
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * Some shift information strings will contain the first shift task as the first symbol.
+     * This is problematic because this way, we can't properly filter out the mentor id & name.
+     * @param s the string to check. Input will only be the first word of the entire string.
+     * @return whether we should filter this bit out of the shift information string.
+     */
+    public static boolean isShiftTask(String s) {
+        switch (s.toLowerCase()) {
+            case "d":
+            case "p":
+            case "rgvt":
+            case "rgnt":
                 return true;
             default:
                 return false;

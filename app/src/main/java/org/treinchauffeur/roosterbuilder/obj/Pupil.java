@@ -90,4 +90,13 @@ public class Pupil {
                     name.split(" ")[0].toLowerCase() + "@ns.nl";
         else return "." + name.split(" ")[0].toLowerCase() + "@ns.nl";
     }
+
+    public boolean hasWeekOff() {
+        int i = 0;
+        for(Shift s : shifts) {
+            if(s.isRestingDay())
+                i++;
+        }
+        return i == 7;
+    }
 }

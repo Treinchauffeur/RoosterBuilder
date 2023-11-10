@@ -2,6 +2,7 @@ package org.treinchauffeur.roosterbuilder.obj;
 
 import androidx.annotation.NonNull;
 
+import org.treinchauffeur.roosterbuilder.MainActivity;
 import org.treinchauffeur.roosterbuilder.misc.Logger;
 import org.treinchauffeur.roosterbuilder.misc.Tools;
 
@@ -46,10 +47,6 @@ public class Shift {
 
     public String getExtraInfo() {
         return extraInfo;
-    }
-
-    public void setExtraInfo(String extraInfo) {
-        this.extraInfo = extraInfo;
     }
 
     public String getModifier() {
@@ -100,6 +97,32 @@ public class Shift {
         this.mentor = mentor;
     }
 
+    public void setExtraInfo(String extraInfo) {
+        this.extraInfo = extraInfo;
+        if(this.extraInfo.split(" ").length > 1) {
+            if(Tools.isShiftTask(this.extraInfo.split(" ")[0]))
+                setExtraInfo(this.extraInfo.substring(this.extraInfo.split(" ")[0].length() + 1));
+            try {
+                int checkId = Integer.parseInt(this.extraInfo.split(" ")[0]);
+                if(checkId > 10000 && checkId < 1000000) {
+                    String mentorId = this.extraInfo.split(" ")[0];
+                    String mentorName = this.extraInfo.replace(mentorId + " ", "");
+
+                    Mentor mentor;
+                    if(MainActivity.mentorsMap.containsKey(mentorId))
+                        mentor = MainActivity.mentorsMap.get(mentorId);
+                    else {
+                        mentor = new Mentor(mentorId, mentorName);
+                        MainActivity.mentorsMap.put(mentorId, mentor);
+                    }
+                    setMentor(mentor);
+                }
+            } catch (NumberFormatException e) {
+                //The given string is not an integer, therefor this information needn't be changed.
+            }
+        }
+    }
+
     public String getNeatShiftNumber() {
         if(shiftNumber.endsWith("H"))
             return "Hgl "+modifier+shiftNumber.split("H")[0];
@@ -110,6 +133,7 @@ public class Shift {
         if(shiftNumber.equals("VL")) return "verlof";
         if(shiftNumber.equals("GVL")) return "verlof";
         if(shiftNumber.equals("R")) return "rustdag";
+        if(shiftNumber.equals("==")) return "streepjesdag";
         if(shiftNumber.equals("CURS")) return "cursus";
         if(shiftNumber.equals("WV") || shiftNumber.equals("WA") || shiftNumber.equals("WR")) return "WTV dag";
         if(shiftNumber.toUpperCase().contains("MAT")) return "materieel";
@@ -121,7 +145,7 @@ public class Shift {
         }
     }
 
-    private boolean isRestingDay() {
+    public boolean isRestingDay() {
         return Tools.isRestingDay(shiftNumber);
     }
 
