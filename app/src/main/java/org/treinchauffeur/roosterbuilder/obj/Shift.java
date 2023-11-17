@@ -155,7 +155,7 @@ public class Shift {
         if(isRestingDay())
             return dateString + ": geen dienst (" + shiftNumber + ")";
         if(withMentor())
-            return dateString + ": dienst " + getNeatShiftNumber() + " met mentor: '" + getMentor().getName() + "'";
+            return dateString + ": dienst " + getNeatShiftNumber() + " met mentor: '" + (getMentor().getNeatName().equals("") ? getMentor().getName() : getMentor().getNeatName()) + "'";
         else if(hasExtra())
             return dateString + ": dienst " + getNeatShiftNumber() + " met extra info: '"+extraInfo + "'";
         else
