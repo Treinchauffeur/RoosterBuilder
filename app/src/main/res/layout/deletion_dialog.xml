@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    app:strokeWidth="0dp"
+    app:cardCornerRadius="28dp">
+<LinearLayout
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_margin="20dp"
+    android:layout_gravity="center_horizontal"
+    android:orientation="vertical">
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/round_delete_outline_24"
+        android:layout_gravity="center_horizontal"
+        app:tint="?attr/colorSecondary" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:layout_marginVertical="10dp"
+        style="@style/TextAppearance.Material3.TitleLarge"
+        android:text="Verwijderen"/>
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/deleteDialogMainText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:layout_marginVertical="10dp"
+        style="@style/TextAppearance.Material3.BodyMedium"
+        android:text="Weet je zeker dat je NaN wil verwijderen?"/>
+
+
+
+    <LinearLayout
+        android:layout_marginTop="20dp"
+        android:orientation="horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end">
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/buttonCancelDatabase"
+        android:layout_gravity="end"
+        android:backgroundTint="?attr/colorSurface"
+        android:textColor="?attr/colorOnSurface"
+        android:text="ANNULEREN"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/buttonDelete"
+        android:layout_gravity="end"
+        android:backgroundTint="?attr/colorSurface"
+        android:textColor="?attr/colorPrimary"
+        android:text="VERWIJDEREN"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+    </LinearLayout>
+
+
+</LinearLayout>
+</com.google.android.material.card.MaterialCardView>

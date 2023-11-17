@@ -30,6 +30,7 @@ import org.treinchauffeur.roosterbuilder.obj.Mentor;
 import org.treinchauffeur.roosterbuilder.obj.Pupil;
 import org.treinchauffeur.roosterbuilder.obj.StoredPupil;
 import org.treinchauffeur.roosterbuilder.ui.DatabaseDialog;
+import org.treinchauffeur.roosterbuilder.ui.DeleteDialog;
 import org.treinchauffeur.roosterbuilder.ui.MentorDialog;
 import org.treinchauffeur.roosterbuilder.ui.PupilDialog;
 
@@ -205,6 +206,22 @@ public class MainActivity extends AppCompatActivity {
                     MentorDialog dialog = new MentorDialog(this, MainActivity.this, mentor);
                     Logger.debug(TAG, mentor.getId() + ": " + mentor.getName() + " - " + mentor.getEmail());
                     dialog.show();
+                });
+
+                newChip.setOnLongClickListener(v -> {
+                    DeleteDialog deleteDialog = new DeleteDialog(this) {
+                        @Override
+                        public void onDeletePressed() {
+                            mentorsMap.remove(mentor.getId());
+                            saveData();
+                            displayData();
+                            dismiss();
+                        }
+                    };
+
+                    deleteDialog.setMainText("Wil je '" + mentor.getNeatName() + "' uit de lijst van opgeslagen mentoren verwijderen?");
+                    deleteDialog.show();
+                    return false;
                 });
 
                 LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
