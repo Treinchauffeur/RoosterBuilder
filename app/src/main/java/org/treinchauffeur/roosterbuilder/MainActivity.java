@@ -1,6 +1,5 @@
 package org.treinchauffeur.roosterbuilder;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
@@ -8,11 +7,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.net.sip.SipAudioCall;
 import android.os.Bundle;
-import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.Toast;
 
 import com.google.android.flexbox.FlexboxLayout;
@@ -23,9 +24,6 @@ import com.google.android.material.textview.MaterialTextView;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.treinchauffeur.roosterbuilder.io.FileReader;
 import org.treinchauffeur.roosterbuilder.misc.Logger;
 import org.treinchauffeur.roosterbuilder.obj.Mentor;
@@ -45,9 +43,11 @@ public class MainActivity extends AppCompatActivity {
     public static final int PICK_FILE_REQUEST = 1312;
     private static final String TAG = "MainActivity";
 
-    public Button selectButton, saveButton;
+    public Button selectButton, saveButton, resetButton;
     private MaterialTextView weekText, pupilsText, mentorsText;
+    private ScrollView pupilScrollView, mentorScrollView;
     private FlexboxLayout pupilsLayout, mentorsLayout;
+    public LinearLayout bottomButtonsLayout;
 
     private MaterialCardView mainCardView;
 
@@ -73,6 +73,8 @@ public class MainActivity extends AppCompatActivity {
             return false;
         });
 
+        bottomButtonsLayout = findViewById(R.id.bottomButtons);
+
         weekText = findViewById(R.id.weekText);
         pupilsText = findViewById(R.id.pupilsText);
         mentorsText = findViewById(R.id.mentorsText);
@@ -80,9 +82,13 @@ public class MainActivity extends AppCompatActivity {
         pupilsLayout = findViewById(R.id.pupilsLayout);
         mentorsLayout = findViewById(R.id.mentorsLayout);
 
+        pupilScrollView = findViewById(R.id.pupilScrollView);
+        mentorScrollView = findViewById(R.id.mentorScrollView);
+
         saveButton = findViewById(R.id.saveButton);
         mainCardView = findViewById(R.id.mainCard);
-        selectButton = findViewById(R.id.buttonSelectFile);
+        selectButton = findViewById(R.id.selectButton);
+        resetButton = findViewById(R.id.resetButton);
 
         selectButton.setOnClickListener(view -> {
             Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
@@ -96,14 +102,15 @@ public class MainActivity extends AppCompatActivity {
             return false;
         });
 
+        resetButton.setOnClickListener(v -> reset());
+
         Intent intent = getIntent();
         if (Objects.equals(intent.getAction(), Intent.ACTION_VIEW)) {
             Uri fileUri = intent.getData();
             fileReceived(fileUri);
         }
 
-        loadSavedPupils();
-
+        loadData();
     }
 
     /**
@@ -136,6 +143,8 @@ public class MainActivity extends AppCompatActivity {
         if(pupilsMap.size() > 0) {
             mainCardView.setVisibility(View.VISIBLE);
             saveButton.setVisibility(View.VISIBLE);
+            bottomButtonsLayout.setVisibility(View.VISIBLE);
+            selectButton.setVisibility(View.GONE);
 
             if(fileReader.weekNumber != -1) {
                 weekText.setText("Week " + fileReader.weekNumber + " van jaar " + fileReader.yearNumber);
@@ -144,8 +153,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             pupilsLayout.removeAllViews();
-            TreeMap<String, Pupil> sortedPupilMap = new TreeMap<>();
-            sortedPupilMap.putAll(pupilsMap);
+            TreeMap<String, Pupil> sortedPupilMap = new TreeMap<>(pupilsMap);
 
             for (Map.Entry<String, Pupil> set : sortedPupilMap.entrySet()) {
                 Pupil pupil = set.getValue();
@@ -180,8 +188,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             mentorsLayout.removeAllViews();
-            TreeMap<String, Mentor> sortedMentorMap = new TreeMap<>();
-            sortedMentorMap.putAll(mentorsMap);
+            TreeMap<String, Mentor> sortedMentorMap = new TreeMap<>(mentorsMap);
 
             for (Map.Entry<String, Mentor> set : sortedMentorMap.entrySet()) {
                 Mentor mentor = set.getValue();
@@ -191,8 +198,12 @@ public class MainActivity extends AppCompatActivity {
                     newChip.setText(mentor.getName());
                 else newChip.setText(mentor.getNeatName());
 
+                newChip.setChipStartPadding(0);
+                newChip.setChipEndPadding(0);
+
                 newChip.setOnClickListener(v -> {
                     MentorDialog dialog = new MentorDialog(this, MainActivity.this, mentor);
+                    Logger.debug(TAG, mentor.getId() + ": " + mentor.getName() + " - " + mentor.getEmail());
                     dialog.show();
                 });
 
@@ -216,7 +227,7 @@ public class MainActivity extends AppCompatActivity {
     public void syncSavedPupils() {
         SharedPreferences sharedPreferences = getSharedPreferences("RoosterBot", MODE_PRIVATE);
 
-        loadSavedPupils();
+        loadData();
 
         String mentorValue = new Gson().toJson(new HashMap<String, Mentor>());
         String mentorJson = sharedPreferences.getString("SavedMentorMap",mentorValue);
@@ -240,39 +251,60 @@ public class MainActivity extends AppCompatActivity {
             Mentor mentor = set.getValue();
 
             if(tempMap.containsKey(mentor.getId())) {
-                mentor.setNeatName(Objects.requireNonNull(tempMap.get(mentor.getId())).getNeatName());
-                mentor.setEmail(Objects.requireNonNull(tempMap.get(mentor.getId())).getEmail());
-                mentor.setPhoneNumber(Objects.requireNonNull(tempMap.get(mentor.getId())).getPhoneNumber());
+                    mentor.setNeatName(Objects.requireNonNull(tempMap.get(mentor.getId())).getNeatName());
+                    mentor.setEmail(Objects.requireNonNull(tempMap.get(mentor.getId())).getEmail());
+                    mentor.setPhoneNumber(Objects.requireNonNull(tempMap.get(mentor.getId())).getPhoneNumber());
             }
         }
     }
 
+    /**
+     *
+     */
     public void saveData() {
-        SharedPreferences sharedPreferences = getSharedPreferences("RoosterBot", MODE_PRIVATE);
+        SharedPreferences sharedPreferences = this.getSharedPreferences("RoosterBot", MODE_PRIVATE);
         String jsonString = new Gson().toJson(savedPupils);
-        Logger.debug(TAG, jsonString);
+        Logger.debug(TAG, "Saving pupils: " + jsonString);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString("SavedPupilsMap", jsonString);
 
         String mentorString = new Gson().toJson(mentorsMap);
-        Logger.debug(TAG, mentorString);
+        Logger.debug(TAG, "Saving mentors: " + mentorString);
         editor.putString("SavedMentorMap", mentorString);
         editor.apply();
     }
 
+    /**
+     * Resets the app to startup conditions.
+     */
     public void reset() {
-        Toast.makeText(this, "Resetting..", Toast.LENGTH_SHORT).show();
         pupilsMap.clear();
+        savedPupils.clear();
+        mentorsMap.clear();
         pupilsLayout.removeAllViews();
         mentorsLayout.removeAllViews();
         mainCardView.setVisibility(View.GONE);
+        bottomButtonsLayout.setVisibility(View.GONE);
+        selectButton.setVisibility(View.VISIBLE);
+
+        fileReader.reset();
+
+        loadData();
     }
 
-    public void loadSavedPupils() {
+    /**
+     * Loads only the saved pupils for use of comparing the list of new pupil name lines.
+     */
+    public void loadData() {
         SharedPreferences sharedPreferences = getSharedPreferences("RoosterBot", MODE_PRIVATE);
         String defValue = new Gson().toJson(new HashMap<String, StoredPupil>());
         String json=sharedPreferences.getString("SavedPupilsMap",defValue);
         TypeToken<HashMap<String,StoredPupil>> token = new TypeToken<HashMap<String,StoredPupil>>() {};
         savedPupils = new Gson().fromJson(json,token.getType());
+
+        String mentorValue = new Gson().toJson(new HashMap<String, Mentor>());
+        String mentorJson = sharedPreferences.getString("SavedMentorMap",mentorValue);
+        TypeToken<HashMap<String, Mentor>> mentorToken = new TypeToken<HashMap<String, Mentor>>() {};
+        mentorsMap.putAll(new Gson().fromJson(mentorJson,mentorToken.getType()));
     }
 }

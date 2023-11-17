@@ -102,8 +102,7 @@ public class MentorDialog extends Dialog {
         buttonSave.setOnClickListener(v -> {
             //Save full name
             if(fullNameField.getEditText().getText().toString().length() > mentor.getName().length() / 2) {
-
-                Objects.requireNonNull(activity.mentorsMap.get(mentor.getId())).setNeatName(fullNameField.getEditText().getText().toString());
+                Objects.requireNonNull(MainActivity.mentorsMap.get(mentor.getId())).setNeatName(fullNameField.getEditText().getText().toString());
                 activity.saveData();
             } else {
                 fullNameField.setError("Voornaam + Achternaam");
@@ -112,32 +111,32 @@ public class MentorDialog extends Dialog {
 
             //Save phone number
             if(phoneNumberField.getEditText().getText().toString().startsWith("06") && phoneNumberField.getEditText().getText().toString().length() == 10) {
-                Objects.requireNonNull(activity.mentorsMap.get(mentor.getId())).setPhoneNumber(phoneNumberField.getEditText().getText().toString());
-                activity.saveData();
+                Objects.requireNonNull(MainActivity.mentorsMap.get(mentor.getId())).setPhoneNumber(phoneNumberField.getEditText().getText().toString());
             } else {
                 phoneNumberField.setError("Formaat: 0612345678");
-                return;
             }
 
             //Save email
             if(!emailField.getEditText().getText().toString().endsWith("@ns.nl")) {
                 emailField.setError("E-mailadres eindigt niet op '@ns.nl'");
                 return;
-            } else if(emailField.getEditText().getText().toString().length() < (mentor.getName().split(" ")[0].length() + 6)) {
+            } else if(emailField.getEditText().getText().toString().length() < (mentor.getName().split(" ")[0].length() + 4)) {
                 emailField.setError("E-mailadres is te kort");
                 return;
             } else {
-                Objects.requireNonNull(activity.mentorsMap.get(mentor.getId())).setEmail(emailField.getEditText().getText().toString());
+                Objects.requireNonNull(MainActivity.mentorsMap.get(mentor.getId())).setEmail(emailField.getEditText().getText().toString());
                 activity.saveData();
             }
 
-            dismiss();
-            activity.displayData();
             activity.saveData();
+            activity.displayData();
+            dismiss();
         });
 
+        //Dismiss button
         buttonCancel.setOnClickListener(v -> dismiss());
 
+        //This is a mentor, we're not displaying these.
         weekHeader.setVisibility(View.GONE);
         monday.setVisibility(View.GONE);
         tuesday.setVisibility(View.GONE);

@@ -50,17 +50,20 @@ public class FileReader {
         this.context = context;
     }
 
+    public void reset() {
+        filesUsed.clear();
+        pupilNames.clear();
+        fileContents.clear();
+        weekNumber = -1;
+        yearNumber = -1;
+    }
+
     @SuppressLint("SetTextI18n")
     public boolean startReading(Uri uri) {
         boolean success = false;
         int lines = 0;
         fileContents.clear();
         Logger.debug(TAG, "Started reading: "+uri);
-
-        if(filesUsed.contains(uri)) {
-            Toast.makeText(context, "Dit bestand is reeds ingelezen!", Toast.LENGTH_SHORT).show();
-            return false;
-        }
 
         try {
             InputStream inputStream = context.getContentResolver().openInputStream(uri);
@@ -77,12 +80,11 @@ public class FileReader {
 
             reader = new BufferedReader(new InputStreamReader(inputStream));
 
+            //Used to make the app compatible with the ability to use multiple input files.
             for (int i = 0; i < lines; i++) {
                 fileContents.add(reader.readLine());
             }
-
             filesUsed.add(uri);
-            activity.selectButton.setVisibility(View.GONE);
 
             if(fileContents.size() > 9) { //9 is hypothetically the  minimal amount of lines
                 processData();
@@ -156,7 +158,7 @@ public class FileReader {
                     }
                 }
 
-                //This is stupid, but DiSys apparently outputs some names with commas instead of spaces..
+                //This is stupid, but DiSys apparently outputs SOME names with commas instead of spaces..
                 if(pupilName.contains(",")) {
                     pupilName = pupilName.replace(",", " ");
                     if(pupilName.endsWith(" ")) pupilName = pupilName.substring(0, pupilName.length() - 1);
@@ -440,6 +442,8 @@ public class FileReader {
                 }
             }
         }
+
+        activity.saveData();
     }
 
 }

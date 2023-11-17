@@ -99,9 +99,9 @@ public class Shift {
 
     public void setExtraInfo(String extraInfo) {
         this.extraInfo = extraInfo;
-        if(this.extraInfo.split(" ").length > 1) {
-            if(Tools.isShiftTask(this.extraInfo.split(" ")[0]))
-                setExtraInfo(this.extraInfo.substring(this.extraInfo.split(" ")[0].length() + 1));
+        if(extraInfo.split(" ").length > 1) {
+            if(Tools.isShiftTask(extraInfo.split(" ")[0]))
+                this.extraInfo = extraInfo.substring(this.extraInfo.split(" ")[0].length() + 1);
             try {
                 int checkId = Integer.parseInt(this.extraInfo.split(" ")[0]);
                 if(checkId > 10000 && checkId < 1000000) {

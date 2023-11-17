@@ -15,33 +15,35 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="40dp"
         android:layout_marginBottom="20dp"
-        app:menu="@menu/menu"
         app:layout_constraintTop_toTopOf="parent"
+        app:menu="@menu/menu"
         app:title="Roosterbot"
         app:titleTextAppearance="@style/TextAppearance.Material3.DisplayLarge"
         app:titleTextColor="?attr/colorOnSecondaryContainer" />
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/buttonSelectFile"
+        android:id="@+id/selectButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:text="Selecteer bestand"
+        app:icon="@drawable/baseline_upload_file_14"
+        style="@style/Widget.Material3.Button.TonalButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/toolbar" />
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/mainCard"
-        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="20dp"
         android:layout_marginBottom="20dp"
+        android:visibility="gone"
         app:cardBackgroundColor="?attr/colorSurface"
         app:cardCornerRadius="15dp"
         app:cardElevation="0dp"
-        app:layout_constraintTop_toBottomOf="@+id/buttonSelectFile"
+        app:layout_constraintTop_toBottomOf="@+id/selectButton"
         app:strokeColor="?attr/colorSurfaceContainerHighest"
         app:strokeWidth="1dp">
 
@@ -64,9 +66,10 @@
                     style="@style/TextAppearance.Material3.TitleMedium"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_margin="5dp"
+                    android:layout_margin="10dp"
                     android:gravity="center_horizontal"
-                    android:text="Week NaN van jaar NaN (ERROR)" />
+                    android:textColor="?attr/colorSecondary"
+                    android:text="Week NaN van jaar NaN (ERROR!)" />
 
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/pupilsText"
@@ -74,21 +77,22 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_margin="10dp"
-                    android:text="Aspiranten (NaN):" />
+                    android:text="Aspiranten (ERROR!):" />
 
                 <ScrollView
+                    android:id="@+id/pupilScrollView"
                     android:layout_width="match_parent"
                     android:layout_height="200dp"
-                    android:requiresFadingEdge="vertical"
-                    android:fadingEdgeLength="30dp">
+                    android:fadingEdgeLength="30dp"
+                    android:requiresFadingEdge="vertical">
 
-                <com.google.android.flexbox.FlexboxLayout
-                    android:id="@+id/pupilsLayout"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingHorizontal="5dp"
-                    app:flexWrap="wrap"
-                    app:justifyContent="space_evenly">
+                    <com.google.android.flexbox.FlexboxLayout
+                        android:id="@+id/pupilsLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingHorizontal="5dp"
+                        app:flexWrap="wrap"
+                        app:justifyContent="space_evenly">
 
                         <com.google.android.material.chip.Chip
                             android:layout_width="wrap_content"
@@ -106,21 +110,22 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_margin="10dp"
-                    android:text="Mentoren (NaN):" />
+                    android:text="Mentoren (ERROR!):" />
 
                 <ScrollView
+                    android:id="@+id/mentorScrollView"
                     android:layout_width="match_parent"
                     android:layout_height="150dp"
-                    android:requiresFadingEdge="vertical"
-                    android:fadingEdgeLength="30dp">
+                    android:fadingEdgeLength="30dp"
+                    android:requiresFadingEdge="vertical">
 
-                <com.google.android.flexbox.FlexboxLayout
-                    android:id="@+id/mentorsLayout"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingHorizontal="5dp"
-                    app:flexWrap="wrap"
-                    app:justifyContent="space_evenly">
+                    <com.google.android.flexbox.FlexboxLayout
+                        android:id="@+id/mentorsLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingHorizontal="5dp"
+                        app:flexWrap="wrap"
+                        app:justifyContent="space_evenly">
 
                         <com.google.android.material.chip.Chip
                             android:layout_width="wrap_content"
@@ -138,15 +143,38 @@
 
     </com.google.android.material.card.MaterialCardView>
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/saveButton"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/bottomButtons"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:text="Opslaan als PDF en XLSX (inop.)"
-        android:visibility="gone"
+        android:gravity="center_horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/mainCard" />
+        app:layout_constraintTop_toBottomOf="@id/mainCard"
+        android:visibility="gone">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/resetButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_marginHorizontal="5dp"
+            android:text="Reset"
+            app:icon="@drawable/round_restart_alt_24"
+            style="@style/Widget.Material3.Button.OutlinedButton.Icon"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/mainCard" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/saveButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_marginHorizontal="5dp"
+            android:text="Opslaan (TODO)"
+            app:icon="@drawable/round_save_alt_24"
+            style="@style/Widget.Material3.Button"/>
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
