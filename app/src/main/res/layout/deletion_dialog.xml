@@ -36,7 +36,7 @@
         android:gravity="center_horizontal"
         android:layout_marginVertical="10dp"
         style="@style/TextAppearance.Material3.BodyMedium"
-        android:text="Weet je zeker dat je NaN wil verwijderen?"/>
+        android:text="Weet je zeker dat je ERROR wil verwijderen?"/>
 
 
 

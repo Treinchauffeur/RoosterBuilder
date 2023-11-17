@@ -219,7 +219,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                     };
 
-                    deleteDialog.setMainText("Wil je '" + mentor.getNeatName() + "' uit de lijst van opgeslagen mentoren verwijderen?");
+                    deleteDialog.setMainText("Wil je '" + mentor.getNeatName() + "' uit de lijst van opgeslagen mentoren wilt verwijderen?");
                     deleteDialog.show();
                     return false;
                 });
