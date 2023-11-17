@@ -26,8 +26,12 @@ import java.util.Objects;
 public abstract class DeleteDialog extends Dialog {
 
     public static final String TAG = "DeletionDialog";
-    private MaterialTextView mainText;
+    private final MaterialTextView mainText;
 
+    /**
+     * A generic material you deletion dialog that can be used in all kinds of different applications.
+     * @param context
+     */
     @SuppressLint("SetTextI18n")
     public DeleteDialog(@NonNull Context context) {
         super(context);
@@ -43,8 +47,15 @@ public abstract class DeleteDialog extends Dialog {
         buttonCancel.setOnClickListener(v -> dismiss());
     }
 
+    /**
+     * Defines what we should do when the 'Delete' button has been pressed by the user.
+     */
     public abstract void onDeletePressed();
 
+    /**
+     * Sets the main text that should be displayed to the user.
+     * @param text the body text of the dialog.
+     */
     public void setMainText(String text) {
         mainText.setText(text);
     }
