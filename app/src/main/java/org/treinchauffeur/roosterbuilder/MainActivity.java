@@ -1,20 +1,17 @@
 package org.treinchauffeur.roosterbuilder;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
-import android.net.sip.SipAudioCall;
 import android.os.Bundle;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.flexbox.FlexboxLayout;
 import com.google.android.material.appbar.MaterialToolbar;
@@ -47,7 +44,6 @@ public class MainActivity extends AppCompatActivity {
 
     public Button selectButton, saveButton, resetButton;
     private MaterialTextView weekText, pupilsText, mentorsText;
-    private ScrollView pupilScrollView, mentorScrollView;
     private FlexboxLayout pupilsLayout, mentorsLayout;
     public LinearLayout bottomButtonsLayout;
 
@@ -84,9 +80,6 @@ public class MainActivity extends AppCompatActivity {
         pupilsLayout = findViewById(R.id.pupilsLayout);
         mentorsLayout = findViewById(R.id.mentorsLayout);
 
-        pupilScrollView = findViewById(R.id.pupilScrollView);
-        mentorScrollView = findViewById(R.id.mentorScrollView);
-
         saveButton = findViewById(R.id.saveButton);
         mainCardView = findViewById(R.id.mainCard);
         selectButton = findViewById(R.id.selectButton);
@@ -96,6 +89,7 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
             intent.addCategory(Intent.CATEGORY_OPENABLE);
             intent.setType("text/*");
+            //noinspection deprecation
             startActivityForResult(intent, PICK_FILE_REQUEST);
         });
 
@@ -184,7 +178,7 @@ public class MainActivity extends AppCompatActivity {
 
                 if(savedPupils.containsKey(pupil.getName())) {
                     StoredPupil saved = savedPupils.get(pupil.getName());
-                    if(saved.getPhone().equals("")) {
+                    if(Objects.requireNonNull(saved).getPhone().equals("")) {
                         newChip.setError("");
                         unknownPupil = true;
                     }

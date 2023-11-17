@@ -3,20 +3,17 @@ package org.treinchauffeur.roosterbuilder.obj;
 import androidx.annotation.NonNull;
 
 import org.treinchauffeur.roosterbuilder.MainActivity;
-import org.treinchauffeur.roosterbuilder.misc.Logger;
 import org.treinchauffeur.roosterbuilder.misc.Tools;
 
 import java.util.Date;
 import java.util.Objects;
 
 public class Shift {
-
-    public static final String TAG = "Shift";
     private String dateString = "";
     private Pupil pupil;
     private String extraInfo = "";
     private String modifier = "";
-    private Date date;
+    protected Date date;
     private String shiftNumber = "";
     private int weekDay = -1;
     private Mentor mentor = null;
@@ -27,10 +24,6 @@ public class Shift {
 
     public Shift(int weekDay) {
         this.weekDay = weekDay;
-    }
-
-    public String getDateString() {
-        return dateString;
     }
 
     public void setDateString(String dateString) {
@@ -49,16 +42,8 @@ public class Shift {
         return extraInfo;
     }
 
-    public String getModifier() {
-        return modifier;
-    }
-
     public void setModifier(String modifier) {
         this.modifier = modifier;
-    }
-
-    public Date getDate() {
-        return date;
     }
 
     public void setDate(Date date) {
@@ -123,6 +108,10 @@ public class Shift {
         }
     }
 
+    /**
+     * @return the shift number formatted in a way that takes in account the location, additional
+     * modifiers and special shift types that can be displayed a little neater than just one or a couple of characters.
+     */
     public String getNeatShiftNumber() {
         if(shiftNumber.endsWith("H"))
             return "Hgl "+modifier+shiftNumber.split("H")[0];

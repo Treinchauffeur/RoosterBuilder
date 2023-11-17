@@ -30,7 +30,7 @@ public abstract class DeleteDialog extends Dialog {
 
     /**
      * A generic material you deletion dialog that can be used in all kinds of different applications.
-     * @param context
+     * @param context the app's context
      */
     @SuppressLint("SetTextI18n")
     public DeleteDialog(@NonNull Context context) {

@@ -14,13 +14,11 @@ import org.treinchauffeur.roosterbuilder.R;
 import java.util.Objects;
 
 public class InfoDialog extends Dialog {
-
-    public static final String TAG = "InfoDialog";
     private final MaterialTextView mainText;
 
     /**
      * A generic material you deletion dialog that can be used in all kinds of different applications.
-     * @param context
+     * @param context the app's context
      */
     @SuppressLint("SetTextI18n")
     public InfoDialog(@NonNull Context context) {
