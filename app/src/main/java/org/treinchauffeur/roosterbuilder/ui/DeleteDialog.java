@@ -3,33 +3,22 @@ package org.treinchauffeur.roosterbuilder.ui;
 import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Context;
-import android.content.SharedPreferences;
 
 import androidx.annotation.NonNull;
 
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.textfield.TextInputLayout;
 import com.google.android.material.textview.MaterialTextView;
-import com.google.gson.Gson;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.treinchauffeur.roosterbuilder.MainActivity;
 import org.treinchauffeur.roosterbuilder.R;
-import org.treinchauffeur.roosterbuilder.obj.Mentor;
-import org.treinchauffeur.roosterbuilder.obj.StoredPupil;
 
-import java.util.HashMap;
 import java.util.Objects;
 
 public abstract class DeleteDialog extends Dialog {
-
-    public static final String TAG = "DeletionDialog";
     private final MaterialTextView mainText;
 
     /**
-     * A generic material you deletion dialog that can be used in all kinds of different applications.
+     * A generic 'Material You' deletion dialog that can be used in all kinds of different applications.
+     * @author Treinchauffeur
      * @param context the app's context
      */
     @SuppressLint("SetTextI18n")
