@@ -31,6 +31,7 @@ import org.treinchauffeur.roosterbuilder.obj.Pupil;
 import org.treinchauffeur.roosterbuilder.obj.StoredPupil;
 import org.treinchauffeur.roosterbuilder.ui.DatabaseDialog;
 import org.treinchauffeur.roosterbuilder.ui.DeleteDialog;
+import org.treinchauffeur.roosterbuilder.ui.InfoDialog;
 import org.treinchauffeur.roosterbuilder.ui.MentorDialog;
 import org.treinchauffeur.roosterbuilder.ui.PupilDialog;
 
@@ -147,6 +148,8 @@ public class MainActivity extends AppCompatActivity {
             bottomButtonsLayout.setVisibility(View.VISIBLE);
             selectButton.setVisibility(View.GONE);
 
+            boolean unknownPupil = false, unknownMentor = false;
+
             if(fileReader.weekNumber != -1) {
                 weekText.setText("Week " + fileReader.weekNumber + " van jaar " + fileReader.yearNumber);
                 pupilsText.setText("Aspiranten (" + pupilsMap.size() + "):");
@@ -181,9 +184,18 @@ public class MainActivity extends AppCompatActivity {
 
                 if(savedPupils.containsKey(pupil.getName())) {
                     StoredPupil saved = savedPupils.get(pupil.getName());
-                    if(saved.getPhone().equals("")) newChip.setError("");
-                    if(saved.getEmail().equals("")) newChip.setError("");
-                } else newChip.setError("");
+                    if(saved.getPhone().equals("")) {
+                        newChip.setError("");
+                        unknownPupil = true;
+                    }
+                    if(saved.getEmail().equals("")) {
+                        newChip.setError("");
+                        unknownPupil = true;
+                    }
+                } else {
+                    newChip.setError("");
+                    unknownPupil = true;
+                }
 
                 pupilsLayout.addView(newChip);
             }
@@ -231,10 +243,34 @@ public class MainActivity extends AppCompatActivity {
                 params.setMargins(5, 0, 5, 0);
                 newChip.setLayoutParams(params);
 
-                if(mentor.getPhoneNumber().equals("")) newChip.setError("");
-                if(mentor.getEmail().equals("")) newChip.setError("");
+                if(mentor.getPhoneNumber().equals("")) {
+                    newChip.setError("");
+                    unknownMentor = true;
+                }
+                if(mentor.getEmail().equals("")) {
+                    newChip.setError("");
+                    unknownMentor = true;
+                }
 
                 mentorsLayout.addView(newChip);
+            }
+
+            if(unknownPupil || unknownMentor) {
+                InfoDialog dialog = new InfoDialog(this);
+                if(unknownPupil && unknownMentor)
+                    dialog.setMainText("Er zijn in dit bestand zowel (nieuwe) aspiranten als mentoren" +
+                            " gevonden waarvan geen gegevens bekend zijn of deze nog onvolledig zijn! \n\n" +
+                            "Deze worden aangegeven middels een uitroepteken naast hun namen.");
+                else if (unknownPupil)
+                    dialog.setMainText("Er zijn in dit bestand (nieuwe) aspiranten gevonden waarvan " +
+                            "geen gegevens bekend zijn of deze nog onvolledig zijn! \n\n" +
+                            "Deze worden aangegeven middels een uitroepteken naast hun naam.");
+                else
+                    dialog.setMainText("Er zijn in dit bestand (nieuwe) mentoren gevonden waarvan " +
+                            "geen gegevens bekend zijn of deze nog onvolledig zijn! \n\n" +
+                            "Deze worden aangegeven middels een uitroepteken naast hun naam.");
+
+                dialog.show();
             }
         } else {
             Toast.makeText(this, "Er is een fout opgetreden! 0900-BEL-POLSKI", Toast.LENGTH_SHORT).show();
