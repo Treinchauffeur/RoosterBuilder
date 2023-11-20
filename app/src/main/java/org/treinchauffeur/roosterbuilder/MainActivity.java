@@ -22,6 +22,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import org.treinchauffeur.roosterbuilder.io.FileReader;
+import org.treinchauffeur.roosterbuilder.io.PdfFactory;
 import org.treinchauffeur.roosterbuilder.misc.Logger;
 import org.treinchauffeur.roosterbuilder.obj.Mentor;
 import org.treinchauffeur.roosterbuilder.obj.Pupil;
@@ -41,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
 
     public static final int PICK_FILE_REQUEST = 1312;
     private static final String TAG = "MainActivity";
-
+    public int weekNumber = -1, yearNumber = -1;
     public Button selectButton, saveButton, resetButton;
     private MaterialTextView weekText, pupilsText, mentorsText;
     private FlexboxLayout pupilsLayout, mentorsLayout;
@@ -144,8 +145,8 @@ public class MainActivity extends AppCompatActivity {
 
             boolean unknownPupil = false, unknownMentor = false;
 
-            if(fileReader.weekNumber != -1) {
-                weekText.setText("Week " + fileReader.weekNumber + " van jaar " + fileReader.yearNumber);
+            if(weekNumber != -1) {
+                weekText.setText("Week " + weekNumber + " van jaar " + yearNumber);
                 pupilsText.setText("Aspiranten (" + pupilsMap.size() + "):");
                 mentorsText.setText("Mentoren (" + mentorsMap.size() + "):");
             }
@@ -160,13 +161,29 @@ public class MainActivity extends AppCompatActivity {
                 newChip.setText(pupil.getNeatName());
                 newChip.setChipStartPadding(0);
                 newChip.setChipEndPadding(0);
+                newChip.setCheckable(true);
+                newChip.setChecked(true);
 
-                if(pupil.hasWeekOff())
-                    newChip.setEnabled(false);
+                if(pupil.hasWeekOff()) {
+                    newChip.setChecked(false);
+                    pupil.shouldDisplay(false);
+                }
 
                 newChip.setOnClickListener(v -> {
                     PupilDialog dialog = new PupilDialog(this, MainActivity.this, pupil);
                     dialog.show();
+                    newChip.setChecked(pupil.getShouldDisplay());
+                });
+
+                newChip.setOnLongClickListener( v -> {
+                    if(newChip.isChecked()) {
+                        newChip.setChecked(false);
+                        pupil.shouldDisplay(false);
+                    } else {
+                        newChip.setChecked(true);
+                        pupil.shouldDisplay(true);
+                    }
+                    return true;
                 });
 
                 LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
@@ -195,7 +212,13 @@ public class MainActivity extends AppCompatActivity {
             }
 
             mentorsLayout.removeAllViews();
-            TreeMap<String, Mentor> sortedMentorMap = new TreeMap<>(mentorsMap);
+            TreeMap<String, Mentor> sortedMentorMap = new TreeMap<>();
+
+            //Sorting the mentors, since sorting them by id is a but useless..
+            for (Map.Entry<String, Mentor> set : mentorsMap.entrySet()) {
+                Mentor mentor = set.getValue();
+                sortedMentorMap.put(mentor.getName(), mentor);
+            }
 
             for (Map.Entry<String, Mentor> set : sortedMentorMap.entrySet()) {
                 Mentor mentor = set.getValue();
@@ -265,6 +288,14 @@ public class MainActivity extends AppCompatActivity {
                             "Deze worden aangegeven middels een uitroepteken naast hun naam.");
 
                 dialog.show();
+
+                //We're doing all this here, because this way we're sure all the variables will have been set correctly.
+                saveButton.setEnabled(sortedMentorMap.size() > 0 && sortedPupilMap.size() > 0);
+
+                saveButton.setOnClickListener(v -> {
+                    PdfFactory pdfFactory = new PdfFactory(this, MainActivity.this, sortedPupilMap, sortedMentorMap);
+                    pdfFactory.write();
+                });
             }
         } else {
             Toast.makeText(this, "Er is een fout opgetreden! 0900-BEL-POLSKI", Toast.LENGTH_SHORT).show();

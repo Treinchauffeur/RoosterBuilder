@@ -4,13 +4,10 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
-import android.view.View;
-import android.widget.Toast;
 
 import org.treinchauffeur.roosterbuilder.MainActivity;
 import org.treinchauffeur.roosterbuilder.misc.Logger;
 import org.treinchauffeur.roosterbuilder.misc.Tools;
-import org.treinchauffeur.roosterbuilder.obj.Mentor;
 import org.treinchauffeur.roosterbuilder.obj.Pupil;
 import org.treinchauffeur.roosterbuilder.obj.Shift;
 import org.treinchauffeur.roosterbuilder.obj.StoredPupil;
@@ -22,7 +19,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 
 public class FileReader {
@@ -37,7 +33,6 @@ public class FileReader {
 
     private String mondayDateString, tuesdayDateString, wednesdayDateString, thursdayDateString,
             fridayDateString, saturdayDateString, sundayDateString;
-    public int weekNumber = -1, yearNumber = -1;
 
     public ArrayList<Uri> filesUsed = new ArrayList<>();
 
@@ -54,8 +49,8 @@ public class FileReader {
         filesUsed.clear();
         pupilNames.clear();
         fileContents.clear();
-        weekNumber = -1;
-        yearNumber = -1;
+        activity.weekNumber = -1;
+        activity.yearNumber = -1;
     }
 
     @SuppressLint("SetTextI18n")
@@ -104,10 +99,10 @@ public class FileReader {
             String formattedLine = line.replaceAll("\\s+", " ");
 
             //Defining week and year numbers.
-            if(formattedLine.contains("Selectiecriteria") && weekNumber == -1) {
-                weekNumber = Integer.parseInt(formattedLine.split(" ")[3].replace(":", "").substring(0, 2));
-                yearNumber = Integer.parseInt(formattedLine.split(" ")[3].replace(":", "").substring(2, 6));
-                Logger.debug(TAG, "week: "+weekNumber + ", year: " + yearNumber);
+            if(formattedLine.contains("Selectiecriteria") && activity.weekNumber == -1) {
+                activity.weekNumber = Integer.parseInt(formattedLine.split(" ")[3].replace(":", "").substring(0, 2));
+                activity.yearNumber = Integer.parseInt(formattedLine.split(" ")[3].replace(":", "").substring(2, 6));
+                Logger.debug(TAG, "week: "+ activity.weekNumber + ", year: " + activity.yearNumber);
             }
 
             //Let's check out what the current dates are. We're saving these strings to be able to convert them later on.
@@ -206,7 +201,7 @@ public class FileReader {
 
             //This might get screwed up during newyear's. We're not gonna worry about that
             // right now since this won't be used in a calendar-like application.
-            Date shiftDate = sdf.parse(shiftDateString + "-" + yearNumber);
+            Date shiftDate = sdf.parse(shiftDateString + "-" + activity.yearNumber);
 
             shift.setDateString(shiftDateString);
             shift.setDate(shiftDate);

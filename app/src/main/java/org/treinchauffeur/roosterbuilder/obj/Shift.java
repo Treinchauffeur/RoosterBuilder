@@ -7,6 +7,8 @@ import org.treinchauffeur.roosterbuilder.misc.Tools;
 
 import java.util.Date;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Shift {
     private String dateString = "";
@@ -118,13 +120,15 @@ public class Shift {
         else if(shiftNumber.endsWith("E"))
             return "Es "+modifier+shiftNumber.substring(0, shiftNumber.length()-1);
         if(shiftNumber.toUpperCase().contains("TWO")) return shiftNumber;
-        if(shiftNumber.equals("W")) return "wegleren";
-        if(shiftNumber.equals("VL")) return "verlof";
-        if(shiftNumber.equals("GVL")) return "verlof";
-        if(shiftNumber.equals("R")) return "rustdag";
-        if(shiftNumber.equals("==")) return "streepjesdag";
-        if(shiftNumber.equals("CURS")) return "cursus";
-        if(shiftNumber.equals("WV") || shiftNumber.equals("WA") || shiftNumber.equals("WR")) return "WTV dag";
+        if(shiftNumber.equalsIgnoreCase("W")) return "wegleren";
+        if(shiftNumber.equalsIgnoreCase("VL")) return "verlof";
+        if(shiftNumber.equalsIgnoreCase("GVL")) return "verlof";
+        if(shiftNumber.equalsIgnoreCase("R")) return "rustdag";
+        if(shiftNumber.equalsIgnoreCase("==")) return "streepjesdag";
+        if(shiftNumber.equalsIgnoreCase("MONS")) return "MO";
+        if(shiftNumber.equalsIgnoreCase("PONS")) return "PO";
+        if(shiftNumber.equalsIgnoreCase("CURS")) return "cursus";
+        if(shiftNumber.equalsIgnoreCase("WV") || shiftNumber.equals("WA") || shiftNumber.equals("WR")) return "WTV dag";
         if(shiftNumber.toUpperCase().contains("MAT")) return "materieel";
         if(shiftNumber.toUpperCase().contains("CURS") && extraInfo.toLowerCase().contains("zelfstudie")) return "Zelfstudiedag";
         else if(!Tools.isNonRegularShiftNumber(shiftNumber))
@@ -132,6 +136,28 @@ public class Shift {
         else {
             return modifier + shiftNumber;
         }
+    }
+
+    /**
+     * Some information could be considered confidential or just unnecessary to show to everybody.
+     * @return whether to display the shift's extra information or not.
+     */
+    public boolean shouldNotDisplayExtraInfo() {
+        if (shiftNumber.contains("50")) return true;
+        if (shiftNumber.toUpperCase().contains("MONS")) return true;
+        if (shiftNumber.toUpperCase().contains("PONS")) return true;
+
+        //If extra information contains specific times.
+        Pattern p = Pattern.compile(".*([01]?[0-9]|2[0-3]):[0-5][0-9].*");
+        Matcher m = p.matcher(extraInfo);
+        if(m.matches()) {
+            return true;
+        }
+
+        //Too convoluted
+        if(extraInfo.length() > 25 && !withMentor()) return true;
+
+        return false;
     }
 
     public boolean isRestingDay() {

@@ -10,12 +10,22 @@ public class Pupil {
     private String neatName = "";
     private String phoneNumber = "";
     private String email = "";
+    private boolean toDisplay;
     private final ArrayList<Shift> shifts = new ArrayList<>();
     public Pupil(String name) {
         this.name = name;
+        toDisplay = true;
         for (int i = 0; i < 7; i++) {
             shifts.add(new Shift(i));
         }
+    }
+
+    public void shouldDisplay(boolean toDisplay) {
+        this.toDisplay = toDisplay;
+    }
+
+    public boolean getShouldDisplay() {
+        return toDisplay;
     }
 
     public String getName() {
