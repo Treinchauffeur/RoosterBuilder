@@ -120,16 +120,16 @@ public class Shift {
         else if(shiftNumber.endsWith("E"))
             return "Es "+modifier+shiftNumber.substring(0, shiftNumber.length()-1);
         if(shiftNumber.toUpperCase().contains("TWO")) return shiftNumber;
-        if(shiftNumber.equalsIgnoreCase("W")) return "wegleren";
-        if(shiftNumber.equalsIgnoreCase("VL")) return "verlof";
-        if(shiftNumber.equalsIgnoreCase("GVL")) return "verlof";
-        if(shiftNumber.equalsIgnoreCase("R")) return "rustdag";
-        if(shiftNumber.equalsIgnoreCase("==")) return "streepjesdag";
+        if(shiftNumber.equalsIgnoreCase("W")) return "Wegleren";
+        if(shiftNumber.equalsIgnoreCase("VL")) return "Verlof";
+        if(shiftNumber.equalsIgnoreCase("GVL")) return "Verlof";
+        if(shiftNumber.equalsIgnoreCase("R")) return "Rustdag";
+        if(shiftNumber.equalsIgnoreCase("==")) return "Streepjesdag";
         if(shiftNumber.equalsIgnoreCase("MONS")) return "MO";
         if(shiftNumber.equalsIgnoreCase("PONS")) return "PO";
-        if(shiftNumber.equalsIgnoreCase("CURS")) return "cursus";
-        if(shiftNumber.equalsIgnoreCase("WV") || shiftNumber.equals("WA") || shiftNumber.equals("WR")) return "WTV dag";
-        if(shiftNumber.toUpperCase().contains("MAT")) return "materieel";
+        if(shiftNumber.equalsIgnoreCase("CURS")) return "Cursus";
+        if(shiftNumber.equalsIgnoreCase("WV") || shiftNumber.equals("WA") || shiftNumber.equals("WR")) return "WTV-dag";
+        if(shiftNumber.toUpperCase().contains("MAT")) return "Materieel";
         if(shiftNumber.toUpperCase().contains("CURS") && extraInfo.toLowerCase().contains("zelfstudie")) return "Zelfstudiedag";
         else if(!Tools.isNonRegularShiftNumber(shiftNumber))
             return "Es "+modifier+shiftNumber;

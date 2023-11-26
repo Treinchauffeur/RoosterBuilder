@@ -1,6 +1,14 @@
 package org.treinchauffeur.roosterbuilder.misc;
 
+import org.treinchauffeur.roosterbuilder.obj.Mentor;
+import org.treinchauffeur.roosterbuilder.obj.Pupil;
+
+import java.util.Map;
+
 public class Tools {
+
+    public static final String dudText = "ZZ!!DUD!!ZZ";
+    public static final String TAG = "Tools";
 
     /**
      * Match a number with optional '-' and decimal.
@@ -137,5 +145,17 @@ public class Tools {
         output = input.toLowerCase();
         output = output.substring(0, 1).toUpperCase() + output.substring(1);
         return output;
+    }
+
+    public static float getPageHeight(Map<String, Pupil> pupils, Map<String, Mentor> mentors) {
+        float height = 250;
+        int biggestSize = Math.max(pupils.size(), mentors.size());
+        float rowHeight = 10;
+
+        Logger.debug(TAG, pupils.size() + ", " + mentors.size());
+
+        height += pupils.size() * 2 * rowHeight;
+        height += biggestSize * rowHeight;
+        return height;
     }
 }

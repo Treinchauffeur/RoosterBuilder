@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">RoosterBuilder</string>
+    <string name="pdfTopText" translatable="false">In dit bestand kan je een rooster vinden die voor alle aspiranten geldt. Hierin kunnen jullie het weekoverzicht zien van jezelf en je collega’s. Ook zijn de telefoonnummers van jullie en jullie mentoren toegevoegd. Dit rooster dient als extra hulpmiddel naast jullie normale DW en dient puur als extra informatie. Het is dus bijvoorbeeld niet de bedoeling dat jullie onderling diensten gaan ruilen, dit moet nog steeds via de Dienstindelers. Mocht je op- of aanmerkingen hebben op dit rooster, dan hoor ik dat graag. Feedback is altijd welkom.</string>
+
 </resources>

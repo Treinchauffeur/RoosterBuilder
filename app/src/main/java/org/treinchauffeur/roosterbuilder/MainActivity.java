@@ -90,6 +90,7 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
             intent.addCategory(Intent.CATEGORY_OPENABLE);
             intent.setType("text/*");
+
             //noinspection deprecation
             startActivityForResult(intent, PICK_FILE_REQUEST);
         });
@@ -108,6 +109,12 @@ public class MainActivity extends AppCompatActivity {
         }
 
         loadData();
+
+        if(pupilsMap.size() == 0 && mentorsMap.size() == 0) {
+            DatabaseDialog dialog = new DatabaseDialog(context, MainActivity.this);
+            dialog.show();
+            Toast.makeText(context, "Er zijn nog geen opgeslagen aspiranten en of mentoren gevonden!", Toast.LENGTH_SHORT).show();
+        }
     }
 
     /**

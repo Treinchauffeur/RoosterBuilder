@@ -14,7 +14,8 @@ public class Pupil {
     private final ArrayList<Shift> shifts = new ArrayList<>();
     public Pupil(String name) {
         this.name = name;
-        toDisplay = true;
+        if(!name.equals(Tools.dudText))
+            toDisplay = true;
         for (int i = 0; i < 7; i++) {
             shifts.add(new Shift(i));
         }
