@@ -89,6 +89,7 @@ public class Tools {
             case "==":
             case "vl":
             case "gvl":
+            case "ot":
             case "wa":
             case "wr":
             case "wv":

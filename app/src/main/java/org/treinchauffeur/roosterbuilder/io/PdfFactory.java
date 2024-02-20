@@ -216,7 +216,8 @@ public class PdfFactory {
 
                 for (Shift shift : pupil.getShifts()) {
                     PdfPCell shiftNumberCell = new PdfPCell(new Phrase(shift.getNeatShiftNumber(), font));
-                    if(shift.isRestingDay()) shiftNumberCell.setBackgroundColor(new Color(255, 221, 221));
+                    if (shift.isRestingDay())
+                        shiftNumberCell.setBackgroundColor(new Color(255, 221, 221));
 
                     if (shift.getWeekDay() == Shift.MAANDAG) shiftNumberCell.setBorderWidthLeft(1f);
                     if (shift.getWeekDay() == Shift.ZONDAG) shiftNumberCell.setBorderWidthRight(1f);
@@ -254,7 +255,6 @@ public class PdfFactory {
             document.add(table);
 
             //Second part of the document. We need to add the tables for the pupil & mentor phone numbers.
-
             float[] phoneColumnDefinitionSize = {20, 8.51F, 10, 20, 8.51F};
 
             PdfPTable tablePhone = new PdfPTable(phoneColumnDefinitionSize);
@@ -378,7 +378,11 @@ public class PdfFactory {
         document.close();
         signPdf();
     }
-    private void signPdf () {
+
+    /**
+     * Makes the pdf file quite a bit prettier by adding a logo and a footer.
+     */
+    private void signPdf() {
         File pdfFile = new File(path + fileName);
         if (pdfFile.exists()) {
             Logger.debug(TAG, "PDF created successfully at: " + pdfFile.getAbsolutePath());
@@ -398,7 +402,7 @@ public class PdfFactory {
                 int margin = 40;
                 float width = 30, height = 30;
                 float x = page.getBBox().getUpperRightX() - (width + margin);
-                float y =  page.getBBox().getUpperRightY() - (2 * margin);
+                float y = page.getBBox().getUpperRightY() - (2 * margin);
                 contentStream.drawImage(imageXObject, x, y, width, height);
                 contentStream.close();
 
@@ -412,7 +416,7 @@ public class PdfFactory {
                 PDPageContentStream contentStreamFooter = new PDPageContentStream(document, page, PDPageContentStream.AppendMode.APPEND, true);
                 float widthFooter = 500, heightFooter = 21; //should be 21.4
                 float xFooter = 0;
-                float yFooter =  0;
+                float yFooter = 0;
                 contentStreamFooter.drawImage(imageXObjectFooter, xFooter, yFooter, widthFooter, heightFooter);
                 contentStreamFooter.close();
 
