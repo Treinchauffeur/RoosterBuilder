@@ -86,6 +86,7 @@ public class Tools {
      */
     public static boolean isRestingDay(String shiftNumber) {
         switch (shiftNumber.toLowerCase()) {
+            case "ba":
             case "z":
             case "r":
             case "==":
