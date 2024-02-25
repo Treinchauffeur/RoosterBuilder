@@ -84,6 +84,11 @@ public class Shift {
         this.mentor = mentor;
     }
 
+    /**
+     * Adds the extra information to a shift. Also checks whether the supplied information mentions a mentor.
+     * If yes, we try to combine this information & couple a mentor to this shift.
+     * @param extraInfo The raw information.
+     */
     public void setExtraInfo(String extraInfo) {
         this.extraInfo = extraInfo;
         if(extraInfo.split(" ").length > 1) {

@@ -17,7 +17,7 @@
         android:layout_marginBottom="20dp"
         app:layout_constraintTop_toTopOf="parent"
         app:menu="@menu/menu"
-        app:title="Roosterbot"
+        app:title="@string/app_name"
         app:titleTextAppearance="@style/TextAppearance.Material3.DisplayLarge"
         app:titleTextColor="?attr/colorOnSecondaryContainer" />
 

@@ -7,7 +7,7 @@ import java.util.Map;
 
 public class Tools {
 
-    public static final boolean DEBUG = true;
+    public static final boolean DEBUG = false;
     public static final String dudText = "ZZ!!DUD!!ZZ";
     public static final String TAG = "Tools";
 
