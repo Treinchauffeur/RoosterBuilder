@@ -6,8 +6,10 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -15,8 +17,12 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.flexbox.FlexboxLayout;
 import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.button.MaterialButtonToggleGroup;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.chip.Chip;
+import com.google.android.material.color.MaterialColors;
+import com.google.android.material.materialswitch.MaterialSwitch;
 import com.google.android.material.textview.MaterialTextView;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -24,11 +30,13 @@ import com.google.gson.reflect.TypeToken;
 import org.treinchauffeur.roosterbuilder.io.FileReader;
 import org.treinchauffeur.roosterbuilder.io.PdfFactory;
 import org.treinchauffeur.roosterbuilder.misc.Logger;
+import org.treinchauffeur.roosterbuilder.obj.Manager;
 import org.treinchauffeur.roosterbuilder.obj.Mentor;
 import org.treinchauffeur.roosterbuilder.obj.Pupil;
 import org.treinchauffeur.roosterbuilder.obj.StoredPupil;
 import org.treinchauffeur.roosterbuilder.ui.DatabaseDialog;
 import org.treinchauffeur.roosterbuilder.ui.DeleteDialog;
+import org.treinchauffeur.roosterbuilder.ui.EditableTextView;
 import org.treinchauffeur.roosterbuilder.ui.InfoDialog;
 import org.treinchauffeur.roosterbuilder.ui.MentorDialog;
 import org.treinchauffeur.roosterbuilder.ui.PupilDialog;
@@ -52,11 +60,15 @@ public class MainActivity extends AppCompatActivity {
 
     private FileReader fileReader;
 
+    public final HashMap<String, Manager> managersMap = new HashMap<>(); //Name as key
     public final HashMap<String, Pupil> pupilsMap = new HashMap<>(); //Name as key
 
     public static final HashMap<String, Mentor> mentorsMap = new HashMap<>(); //Id as key.
 
     public HashMap<String, StoredPupil> savedPupils = new HashMap<>();
+
+    public String managerOneName, managerTwoName;
+    public boolean twoManagers = false;
 
 
     @Override
@@ -110,10 +122,138 @@ public class MainActivity extends AppCompatActivity {
 
         loadData();
 
-        if(pupilsMap.size() == 0 && mentorsMap.size() == 0) {
+        if (pupilsMap.size() == 0 && mentorsMap.size() == 0) {
             DatabaseDialog dialog = new DatabaseDialog(context, MainActivity.this);
             dialog.show();
             Toast.makeText(context, "Er zijn nog geen opgeslagen aspiranten en of mentoren gevonden!", Toast.LENGTH_SHORT).show();
+        }
+
+        LinearLayout managerOneLayout = findViewById(R.id.managerOne);
+        Manager managerOne = new Manager("ManagerOne");
+        managerOne.setName(managerOneName);
+        managersMap.put("ManagerOne", managerOne);
+        int day = 0;
+        for (int i = 0; i < managerOneLayout.getChildCount(); i++) {
+            View v = managerOneLayout.getChildAt(i);
+            if (v instanceof MaterialButtonToggleGroup) {
+                MaterialButtonToggleGroup group = (MaterialButtonToggleGroup) v;
+                int finalDay = day;
+
+                //What we should do when a user toggled a button is defined here, using recursion :D
+                group.addOnButtonCheckedListener((group1, checkedId, isChecked) -> {
+                    for (int j = 0; j < group.getChildCount(); j++) {
+                        MaterialButton button = (MaterialButton) group.getChildAt(j);
+                        if (button.isChecked()) {
+                            Objects.requireNonNull(managersMap.get("ManagerOne")).setAvailability(finalDay, button.getText().toString());
+                            button.setBackgroundColor(MaterialColors.getColor(button, com.google.android.material.R.attr.colorPrimary));
+                            button.setTextColor(MaterialColors.getColor(button, com.google.android.material.R.attr.colorOnPrimary));
+                        } else {
+                            button.setBackgroundColor(MaterialColors.getColor(button, com.google.android.material.R.attr.colorPrimaryContainer));
+                            button.setTextColor(MaterialColors.getColor(button, com.google.android.material.R.attr.colorOnPrimaryContainer));
+                        }
+                    }
+                });
+
+                //Let's initialize them, weekends SHOULD BE days off by default
+                for (int j = 0; j < group.getChildCount(); j++) {
+                    MaterialButton button = (MaterialButton) group.getChildAt(j);
+                    if(day < 5) {
+                        if(button.getText().toString().contains("Aanwezig")) {
+                            Objects.requireNonNull(managersMap.get("ManagerOne")).setAvailability(day, button.getText().toString());
+                            button.setChecked(true);
+                        }
+                    } else {
+                        if(button.getText().toString().contains("Rust")) {
+                            Objects.requireNonNull(managersMap.get("ManagerOne")).setAvailability(day, button.getText().toString());
+                            button.setChecked(true);
+                        }
+                    }
+                }
+                day++;
+            }
+
+            if(v instanceof EditableTextView) {
+                EditableTextView etv = (EditableTextView) v;
+                etv.setName(managerOneName);
+                etv.editButton.setOnClickListener(view -> {
+                    etv.setEditable(true);
+                });
+                etv.saveButton.setOnClickListener(view -> {
+                    etv.setEditable(false);
+                    Objects.requireNonNull(managersMap.get("ManagerOne")).setName(etv.getText());
+                    managerOneName = etv.getText();
+                    saveData();
+                });
+            }
+        }
+
+        LinearLayout managerTwoLayout = findViewById(R.id.managerTwo);
+        MaterialSwitch secondManagerToggle = findViewById(R.id.two_managers_toggle);
+        secondManagerToggle.setChecked(twoManagers);
+        secondManagerToggle.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            twoManagers = isChecked;
+            saveData();
+            if(!twoManagers) managerTwoLayout.setVisibility(View.GONE);
+            else managerTwoLayout.setVisibility(View.VISIBLE);
+        });
+
+        if(!twoManagers) managerTwoLayout.setVisibility(View.GONE);
+        Manager managerTwo = new Manager("ManagerTwo");
+        managerTwo.setName(managerTwoName);
+        managersMap.put("ManagerTwo", managerTwo);
+        day = 0;
+        for (int i = 0; i < managerTwoLayout.getChildCount(); i++) {
+            View v = managerTwoLayout.getChildAt(i);
+            if (v instanceof MaterialButtonToggleGroup) {
+                MaterialButtonToggleGroup group = (MaterialButtonToggleGroup) v;
+                int finalDay = day;
+
+                //What we should do when a user toggled a button is defined here, using recursion :D
+                group.addOnButtonCheckedListener((group1, checkedId, isChecked) -> {
+                    for (int j = 0; j < group.getChildCount(); j++) {
+                        MaterialButton button = (MaterialButton) group.getChildAt(j);
+                        if (button.isChecked()) {
+                            Objects.requireNonNull(managersMap.get("ManagerTwo")).setAvailability(finalDay, button.getText().toString());
+                            button.setBackgroundColor(MaterialColors.getColor(button, com.google.android.material.R.attr.colorPrimary));
+                            button.setTextColor(MaterialColors.getColor(button, com.google.android.material.R.attr.colorOnPrimary));
+                        } else {
+                            button.setBackgroundColor(MaterialColors.getColor(button, com.google.android.material.R.attr.colorPrimaryContainer));
+                            button.setTextColor(MaterialColors.getColor(button, com.google.android.material.R.attr.colorOnPrimaryContainer));
+                        }
+                    }
+                });
+
+                //Let's initialize them, weekends SHOULD BE days off by default
+                for (int j = 0; j < group.getChildCount(); j++) {
+                    MaterialButton button = (MaterialButton) group.getChildAt(j);
+                    if(day < 5) {
+                        if(button.getText().toString().contains("Aanwezig")) {
+                            Objects.requireNonNull(managersMap.get("ManagerTwo")).setAvailability(day, button.getText().toString());
+                            button.setChecked(true);
+                        }
+                    } else {
+                        if(button.getText().toString().contains("Rust")) {
+                            Objects.requireNonNull(managersMap.get("ManagerTwo")).setAvailability(day, button.getText().toString());
+                            button.setChecked(true);
+                        }
+                    }
+                }
+                day++;
+            }
+
+            if(v instanceof EditableTextView) {
+                EditableTextView etv = (EditableTextView) v;
+                etv.setName(managerTwoName);
+                etv.editButton.setOnClickListener(view -> {
+                    etv.setEditable(true);
+                });
+                etv.saveButton.setOnClickListener(view -> {
+                    etv.setEditable(false);
+                    Objects.requireNonNull(managersMap.get("ManagerTwo")).setName(etv.getText());
+                    managerTwoName = etv.getText();
+                    saveData();
+                });
+            }
         }
     }
 
@@ -144,7 +284,7 @@ public class MainActivity extends AppCompatActivity {
 
     @SuppressLint("SetTextI18n")
     public void displayData() {
-        if(pupilsMap.size() > 0) {
+        if (pupilsMap.size() > 0) {
             mainCardView.setVisibility(View.VISIBLE);
             saveButton.setVisibility(View.VISIBLE);
             bottomButtonsLayout.setVisibility(View.VISIBLE);
@@ -152,7 +292,7 @@ public class MainActivity extends AppCompatActivity {
 
             boolean unknownPupil = false, unknownMentor = false;
 
-            if(weekNumber != -1) {
+            if (weekNumber != -1) {
                 weekText.setText("Week " + weekNumber + " van jaar " + yearNumber);
                 pupilsText.setText("Aspiranten (" + pupilsMap.size() + "):");
                 mentorsText.setText("Mentoren (" + mentorsMap.size() + "):");
@@ -171,7 +311,7 @@ public class MainActivity extends AppCompatActivity {
                 newChip.setCheckable(true);
                 newChip.setChecked(true);
 
-                if(pupil.hasWeekOff()) {
+                if (pupil.hasWeekOff()) {
                     newChip.setChecked(false);
                     pupil.shouldDisplay(false);
                 }
@@ -182,8 +322,8 @@ public class MainActivity extends AppCompatActivity {
                     newChip.setChecked(pupil.getShouldDisplay());
                 });
 
-                newChip.setOnLongClickListener( v -> {
-                    if(newChip.isChecked()) {
+                newChip.setOnLongClickListener(v -> {
+                    if (newChip.isChecked()) {
                         newChip.setChecked(false);
                         pupil.shouldDisplay(false);
                     } else {
@@ -200,13 +340,13 @@ public class MainActivity extends AppCompatActivity {
                 params.setMargins(5, 0, 5, 0);
                 newChip.setLayoutParams(params);
 
-                if(savedPupils.containsKey(pupil.getName())) {
+                if (savedPupils.containsKey(pupil.getName())) {
                     StoredPupil saved = savedPupils.get(pupil.getName());
-                    if(Objects.requireNonNull(saved).getPhone().equals("")) {
+                    if (Objects.requireNonNull(saved).getPhone().equals("")) {
                         newChip.setError("");
                         unknownPupil = true;
                     }
-                    if(saved.getEmail().equals("")) {
+                    if (saved.getEmail().equals("")) {
                         newChip.setError("");
                         unknownPupil = true;
                     }
@@ -231,7 +371,7 @@ public class MainActivity extends AppCompatActivity {
                 Mentor mentor = set.getValue();
 
                 Chip newChip = new Chip(this);
-                if(mentor.getNeatName().equals(""))
+                if (mentor.getNeatName().equals(""))
                     newChip.setText(mentor.getName());
                 else newChip.setText(mentor.getNeatName());
 
@@ -267,11 +407,11 @@ public class MainActivity extends AppCompatActivity {
                 params.setMargins(5, 0, 5, 0);
                 newChip.setLayoutParams(params);
 
-                if(mentor.getPhoneNumber().equals("")) {
+                if (mentor.getPhoneNumber().equals("")) {
                     newChip.setError("");
                     unknownMentor = true;
                 }
-                if(mentor.getEmail().equals("")) {
+                if (mentor.getEmail().equals("")) {
                     newChip.setError("");
                     unknownMentor = true;
                 }
@@ -279,9 +419,9 @@ public class MainActivity extends AppCompatActivity {
                 mentorsLayout.addView(newChip);
             }
 
-            if(unknownPupil || unknownMentor) {
+            if (unknownPupil || unknownMentor) {
                 InfoDialog dialog = new InfoDialog(this);
-                if(unknownPupil && unknownMentor)
+                if (unknownPupil && unknownMentor)
                     dialog.setMainText("Er zijn in dit bestand zowel (nieuwe) aspiranten als mentoren" +
                             " gevonden waarvan geen gegevens bekend zijn of deze nog onvolledig zijn! \n\n" +
                             "Deze worden aangegeven middels een uitroepteken naast hun namen.");
@@ -315,14 +455,15 @@ public class MainActivity extends AppCompatActivity {
         loadData();
 
         String mentorValue = new Gson().toJson(new HashMap<String, Mentor>());
-        String mentorJson = sharedPreferences.getString("SavedMentorMap",mentorValue);
-        TypeToken<HashMap<String, Mentor>> mentorToken = new TypeToken<HashMap<String, Mentor>>() {};
-        HashMap<String, Mentor> tempMap = new Gson().fromJson(mentorJson,mentorToken.getType());
+        String mentorJson = sharedPreferences.getString("SavedMentorMap", mentorValue);
+        TypeToken<HashMap<String, Mentor>> mentorToken = new TypeToken<HashMap<String, Mentor>>() {
+        };
+        HashMap<String, Mentor> tempMap = new Gson().fromJson(mentorJson, mentorToken.getType());
 
         for (Map.Entry<String, Pupil> set : pupilsMap.entrySet()) {
             Pupil pupil = set.getValue();
 
-            if(!savedPupils.containsKey(pupil.getName())) {
+            if (!savedPupils.containsKey(pupil.getName())) {
                 StoredPupil toSave = new StoredPupil(pupil.getName(), "", "");
                 savedPupils.put(toSave.getSavedName(), toSave);
             } else {
@@ -335,10 +476,10 @@ public class MainActivity extends AppCompatActivity {
         for (Map.Entry<String, Mentor> set : mentorsMap.entrySet()) {
             Mentor mentor = set.getValue();
 
-            if(tempMap.containsKey(mentor.getId())) {
-                    mentor.setNeatName(Objects.requireNonNull(tempMap.get(mentor.getId())).getNeatName());
-                    mentor.setEmail(Objects.requireNonNull(tempMap.get(mentor.getId())).getEmail());
-                    mentor.setPhoneNumber(Objects.requireNonNull(tempMap.get(mentor.getId())).getPhoneNumber());
+            if (tempMap.containsKey(mentor.getId())) {
+                mentor.setNeatName(Objects.requireNonNull(tempMap.get(mentor.getId())).getNeatName());
+                mentor.setEmail(Objects.requireNonNull(tempMap.get(mentor.getId())).getEmail());
+                mentor.setPhoneNumber(Objects.requireNonNull(tempMap.get(mentor.getId())).getPhoneNumber());
             }
         }
     }
@@ -352,6 +493,9 @@ public class MainActivity extends AppCompatActivity {
         Logger.debug(TAG, "Saving pupils: " + jsonString);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString("SavedPupilsMap", jsonString);
+        editor.putString("ManagerOneName", managerOneName);
+        editor.putString("ManagerTwoName", managerTwoName);
+        editor.putBoolean("TwoManagers", twoManagers);
 
         String mentorString = new Gson().toJson(mentorsMap);
         Logger.debug(TAG, "Saving mentors: " + mentorString);
@@ -383,13 +527,18 @@ public class MainActivity extends AppCompatActivity {
     public void loadData() {
         SharedPreferences sharedPreferences = getSharedPreferences("RoosterBot", MODE_PRIVATE);
         String defValue = new Gson().toJson(new HashMap<String, StoredPupil>());
-        String json=sharedPreferences.getString("SavedPupilsMap",defValue);
-        TypeToken<HashMap<String,StoredPupil>> token = new TypeToken<HashMap<String,StoredPupil>>() {};
-        savedPupils = new Gson().fromJson(json,token.getType());
+        String json = sharedPreferences.getString("SavedPupilsMap", defValue);
+        managerOneName = sharedPreferences.getString("ManagerOneName", "Naam teammanager/coördinator");
+        managerTwoName = sharedPreferences.getString("ManagerTwoName", "Naam teammanager/coördinator");
+        twoManagers = sharedPreferences.getBoolean("TwoManagers", false);
+        TypeToken<HashMap<String, StoredPupil>> token = new TypeToken<HashMap<String, StoredPupil>>() {
+        };
+        savedPupils = new Gson().fromJson(json, token.getType());
 
         String mentorValue = new Gson().toJson(new HashMap<String, Mentor>());
-        String mentorJson = sharedPreferences.getString("SavedMentorMap",mentorValue);
-        TypeToken<HashMap<String, Mentor>> mentorToken = new TypeToken<HashMap<String, Mentor>>() {};
-        mentorsMap.putAll(new Gson().fromJson(mentorJson,mentorToken.getType()));
+        String mentorJson = sharedPreferences.getString("SavedMentorMap", mentorValue);
+        TypeToken<HashMap<String, Mentor>> mentorToken = new TypeToken<HashMap<String, Mentor>>() {
+        };
+        mentorsMap.putAll(new Gson().fromJson(mentorJson, mentorToken.getType()));
     }
 }

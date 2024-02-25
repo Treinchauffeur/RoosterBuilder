@@ -2,10 +2,16 @@ package org.treinchauffeur.roosterbuilder.ui;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
@@ -74,7 +80,15 @@ public class DatabaseDialog extends Dialog {
 
             editor.apply();
 
-            dismiss();
+            Toast.makeText(context, "De app wordt opnieuw opgestart.", Toast.LENGTH_SHORT).show();
+
+            buttonCancel.setEnabled(false);
+            buttonSave.setEnabled(false);
+
+            //We need to make sure that the json has been saved properly, therefore we require a delay.
+            final Handler handler = new Handler(Looper.getMainLooper());
+            handler.postDelayed(() -> restartApp(context), 3000);
+
             //activity.syncSavedPupils();
             if(activity.pupilsMap.size() > 2)
                 activity.displayData();
@@ -83,16 +97,29 @@ public class DatabaseDialog extends Dialog {
         buttonCancel.setOnClickListener(v -> dismiss());
     }
 
-    public static boolean isJson(String Json) {
+    public static boolean isJson(String json) {
         try {
-            new JSONObject(Json);
+            new JSONObject(json);
         } catch (JSONException ex) {
             try {
-                new JSONArray(Json);
+                new JSONArray(json);
             } catch (JSONException ex1) {
                 return false;
             }
         }
         return true;
+    }
+
+    public static void restartApp(Context context) {
+        PackageManager packageManager = context.getPackageManager();
+        Intent intent = packageManager.getLaunchIntentForPackage(context.getPackageName());
+        assert intent != null;
+        ComponentName componentName = intent.getComponent();
+        Intent mainIntent = Intent.makeRestartActivityTask(componentName);
+        // Required for API 34 and later
+        // Ref: https://developer.android.com/about/versions/14/behavior-changes-14#safer-intents
+        mainIntent.setPackage(context.getPackageName());
+        context.startActivity(mainIntent);
+        Runtime.getRuntime().exit(0);
     }
 }

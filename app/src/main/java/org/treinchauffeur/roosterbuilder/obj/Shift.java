@@ -120,6 +120,8 @@ public class Shift {
         else if(shiftNumber.endsWith("E"))
             return "Es "+modifier+shiftNumber.substring(0, shiftNumber.length()-1);
         if(shiftNumber.toUpperCase().contains("TWO")) return shiftNumber;
+        if(shiftNumber.equalsIgnoreCase("Z")) return "-"; //Hide these
+        if(shiftNumber.equalsIgnoreCase("P")) return "Praktijk";
         if(shiftNumber.equalsIgnoreCase("W")) return "Wegleren";
         if(shiftNumber.equalsIgnoreCase("VL")) return "Verlof";
         if(shiftNumber.equalsIgnoreCase("GVL")) return "Verlof";

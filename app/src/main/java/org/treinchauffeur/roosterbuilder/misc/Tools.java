@@ -7,6 +7,7 @@ import java.util.Map;
 
 public class Tools {
 
+    public static final boolean DEBUG = true;
     public static final String dudText = "ZZ!!DUD!!ZZ";
     public static final String TAG = "Tools";
 
@@ -85,6 +86,7 @@ public class Tools {
      */
     public static boolean isRestingDay(String shiftNumber) {
         switch (shiftNumber.toLowerCase()) {
+            case "z":
             case "r":
             case "==":
             case "vl":
@@ -103,6 +105,8 @@ public class Tools {
 
     public static boolean isNonRegularShiftNumber(String shiftNumber) {
         switch (shiftNumber.toLowerCase()) {
+            case "ot":
+            case "z":
             case "r":
             case "==":
             case "vl":

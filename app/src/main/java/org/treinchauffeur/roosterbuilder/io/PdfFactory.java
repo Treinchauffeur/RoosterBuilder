@@ -37,6 +37,7 @@ import org.treinchauffeur.roosterbuilder.MainActivity;
 import org.treinchauffeur.roosterbuilder.R;
 import org.treinchauffeur.roosterbuilder.misc.Logger;
 import org.treinchauffeur.roosterbuilder.misc.Tools;
+import org.treinchauffeur.roosterbuilder.obj.Manager;
 import org.treinchauffeur.roosterbuilder.obj.Mentor;
 import org.treinchauffeur.roosterbuilder.obj.Pupil;
 import org.treinchauffeur.roosterbuilder.obj.Shift;
@@ -98,6 +99,7 @@ public class PdfFactory {
         Document document = new Document(PageSize.A4);
         Rectangle size = new Rectangle(500, Tools.getPageHeight(pupilsMap, mentorsMap));
         document.setPageSize(size);
+        Color alternatingColor = new Color(232, 240, 255);
 
         Font font = FontFactory.getFont(FontFactory.HELVETICA, 5);
         Font smallFont = FontFactory.getFont(FontFactory.HELVETICA, 4);
@@ -111,7 +113,7 @@ public class PdfFactory {
             document.open();
 
             float width = document.getPageSize().getWidth();
-            float[] columnDefinitionSize = {20, 11.51F, 11.51F, 11.51F, 11.51F, 11.51F, 11.51F, 11.51F};
+            float[] columnDefinitionSize = {25, 11.51F, 11.51F, 11.51F, 11.51F, 11.51F, 11.51F, 11.51F};
 
             PdfPTable table = new PdfPTable(columnDefinitionSize);
             table.setHorizontalAlignment(0);
@@ -136,6 +138,89 @@ public class PdfFactory {
             document.add(topTable);
 
             headerFont.setSize(12);
+            Phrase topTableTitle = new Phrase("Beschikbaarheid management", headerFont);
+            topTableTitle.getFont().setColor(0, 48, 130);
+            Paragraph topTableTitleParagraph = new Paragraph(topTableTitle);
+            topTableTitleParagraph.setSpacingAfter(5f);
+            document.add(topTableTitleParagraph);
+
+            {
+                PdfPTable managementTable = new PdfPTable(columnDefinitionSize);
+                managementTable.setHorizontalAlignment(0);
+                managementTable.setTotalWidth(width - 75);
+                managementTable.setLockedWidth(true);
+
+                PdfPCell dayCell;
+                dayCell = new PdfPCell(new Phrase("Naam", boldFont));
+                dayCell.setPaddingBottom(4);
+                dayCell.setBackgroundColor(new Color(220, 220, 220));
+                managementTable.addCell(dayCell);
+
+                dayCell = new PdfPCell(new Phrase("Maandag", boldFont));
+                dayCell.setPaddingBottom(4);
+                dayCell.setBackgroundColor(new Color(220, 220, 220));
+                dayCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                dayCell.setVerticalAlignment(Element.ALIGN_CENTER);
+                managementTable.addCell(dayCell);
+                dayCell = new PdfPCell(new Phrase("Dinsdag", boldFont));
+                dayCell.setPaddingBottom(4);
+                dayCell.setBackgroundColor(new Color(220, 220, 220));
+                dayCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                dayCell.setVerticalAlignment(Element.ALIGN_CENTER);
+                managementTable.addCell(dayCell);
+                dayCell = new PdfPCell(new Phrase("Woensdag", boldFont));
+                dayCell.setPaddingBottom(4);
+                dayCell.setBackgroundColor(new Color(220, 220, 220));
+                dayCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                dayCell.setVerticalAlignment(Element.ALIGN_CENTER);
+                managementTable.addCell(dayCell);
+                dayCell = new PdfPCell(new Phrase("Donderdag", boldFont));
+                dayCell.setPaddingBottom(4);
+                dayCell.setBackgroundColor(new Color(220, 220, 220));
+                dayCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                dayCell.setVerticalAlignment(Element.ALIGN_CENTER);
+                managementTable.addCell(dayCell);
+                dayCell = new PdfPCell(new Phrase("Vrijdag", boldFont));
+                dayCell.setPaddingBottom(4);
+                dayCell.setBackgroundColor(new Color(220, 220, 220));
+                dayCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                dayCell.setVerticalAlignment(Element.ALIGN_CENTER);
+                managementTable.addCell(dayCell);
+                dayCell = new PdfPCell(new Phrase("Zaterdag", boldFont));
+                dayCell.setPaddingBottom(4);
+                dayCell.setBackgroundColor(new Color(220, 220, 220));
+                dayCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                dayCell.setVerticalAlignment(Element.ALIGN_CENTER);
+                managementTable.addCell(dayCell);
+                dayCell = new PdfPCell(new Phrase("Zondag", boldFont));
+                dayCell.setPaddingBottom(4);
+                dayCell.setBackgroundColor(new Color(220, 220, 220));
+                dayCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                dayCell.setVerticalAlignment(Element.ALIGN_CENTER);
+                managementTable.addCell(dayCell);
+
+                int j = 0;
+                for (Map.Entry<String, Manager> set : activity.managersMap.entrySet()) {
+                    if(!activity.twoManagers && j != 0) continue;
+                    Manager manager = set.getValue();
+
+                    PdfPCell nameCell = new PdfPCell(new Phrase(manager.getName(), boldFont));
+                    managementTable.addCell(nameCell);
+
+                    for (int i = 0; i < 7; i++) {
+                        PdfPCell shiftNumberCell = new PdfPCell(new Phrase(manager.getAvailability(i), font));
+                        if (manager.getAvailability(i).equals("Rust"))
+                            shiftNumberCell.setBackgroundColor(new Color(255, 221, 221));
+
+                        shiftNumberCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                        managementTable.addCell(shiftNumberCell);
+                    }
+                    j++;
+                }
+
+                document.add(managementTable);
+            }
+
             Phrase tableTitle = new Phrase("Rooster", headerFont);
             tableTitle.getFont().setColor(0, 48, 130);
             Paragraph tableTitleParagraph = new Paragraph(tableTitle);
@@ -145,58 +230,47 @@ public class PdfFactory {
             PdfPCell dayCell;
             dayCell = new PdfPCell(new Phrase("Naam", boldFont));
             dayCell.setPaddingBottom(4);
-            dayCell.setBorderWidthTop(1f);
-            dayCell.setBorderWidthLeft(1f);
             dayCell.setBackgroundColor(new Color(220, 220, 220));
             table.addCell(dayCell);
 
             dayCell = new PdfPCell(new Phrase("Maandag", boldFont));
             dayCell.setPaddingBottom(4);
-            dayCell.setBorderWidthTop(1f);
-            dayCell.setBorderWidthLeft(1f);
             dayCell.setBackgroundColor(new Color(220, 220, 220));
             dayCell.setHorizontalAlignment(Element.ALIGN_CENTER);
             dayCell.setVerticalAlignment(Element.ALIGN_CENTER);
             table.addCell(dayCell);
             dayCell = new PdfPCell(new Phrase("Dinsdag", boldFont));
             dayCell.setPaddingBottom(4);
-            dayCell.setBorderWidthTop(1f);
             dayCell.setBackgroundColor(new Color(220, 220, 220));
             dayCell.setHorizontalAlignment(Element.ALIGN_CENTER);
             dayCell.setVerticalAlignment(Element.ALIGN_CENTER);
             table.addCell(dayCell);
             dayCell = new PdfPCell(new Phrase("Woensdag", boldFont));
             dayCell.setPaddingBottom(4);
-            dayCell.setBorderWidthTop(1f);
             dayCell.setBackgroundColor(new Color(220, 220, 220));
             dayCell.setHorizontalAlignment(Element.ALIGN_CENTER);
             dayCell.setVerticalAlignment(Element.ALIGN_CENTER);
             table.addCell(dayCell);
             dayCell = new PdfPCell(new Phrase("Donderdag", boldFont));
             dayCell.setPaddingBottom(4);
-            dayCell.setBorderWidthTop(1f);
             dayCell.setBackgroundColor(new Color(220, 220, 220));
             dayCell.setHorizontalAlignment(Element.ALIGN_CENTER);
             dayCell.setVerticalAlignment(Element.ALIGN_CENTER);
             table.addCell(dayCell);
             dayCell = new PdfPCell(new Phrase("Vrijdag", boldFont));
             dayCell.setPaddingBottom(4);
-            dayCell.setBorderWidthTop(1f);
             dayCell.setBackgroundColor(new Color(220, 220, 220));
             dayCell.setHorizontalAlignment(Element.ALIGN_CENTER);
             dayCell.setVerticalAlignment(Element.ALIGN_CENTER);
             table.addCell(dayCell);
             dayCell = new PdfPCell(new Phrase("Zaterdag", boldFont));
             dayCell.setPaddingBottom(4);
-            dayCell.setBorderWidthTop(1f);
             dayCell.setBackgroundColor(new Color(220, 220, 220));
             dayCell.setHorizontalAlignment(Element.ALIGN_CENTER);
             dayCell.setVerticalAlignment(Element.ALIGN_CENTER);
             table.addCell(dayCell);
             dayCell = new PdfPCell(new Phrase("Zondag", boldFont));
             dayCell.setPaddingBottom(4);
-            dayCell.setBorderWidthTop(1f);
-            dayCell.setBorderWidthRight(1f);
             dayCell.setBackgroundColor(new Color(220, 220, 220));
             dayCell.setHorizontalAlignment(Element.ALIGN_CENTER);
             dayCell.setVerticalAlignment(Element.ALIGN_CENTER);
@@ -210,26 +284,21 @@ public class PdfFactory {
 
                 //First line: pupil's name with shifts
                 PdfPCell nameCell = new PdfPCell(new Phrase(pupil.getNeatName(), boldFont));
-                nameCell.setBorderWidthTop(1f);
-                nameCell.setBorderWidthLeft(1f);
+                nameCell.setBackgroundColor(alternatingColor);
                 table.addCell(nameCell);
 
                 for (Shift shift : pupil.getShifts()) {
                     PdfPCell shiftNumberCell = new PdfPCell(new Phrase(shift.getNeatShiftNumber(), font));
                     if (shift.isRestingDay())
                         shiftNumberCell.setBackgroundColor(new Color(255, 221, 221));
+                    else shiftNumberCell.setBackgroundColor(alternatingColor);
 
-                    if (shift.getWeekDay() == Shift.MAANDAG) shiftNumberCell.setBorderWidthLeft(1f);
-                    if (shift.getWeekDay() == Shift.ZONDAG) shiftNumberCell.setBorderWidthRight(1f);
-                    shiftNumberCell.setBorderWidthTop(1f);
                     shiftNumberCell.setHorizontalAlignment(Element.ALIGN_CENTER);
                     table.addCell(shiftNumberCell);
                 }
 
                 //Second line: mentor or extra information
                 PdfPCell extraInfoFirstCell = new PdfPCell(new Phrase("Mentor / extra informatie", font));
-                extraInfoFirstCell.setBorderWidthBottom(1f);
-                extraInfoFirstCell.setBorderWidthLeft(1f);
                 extraInfoFirstCell.setPaddingBottom(3f);
                 table.addCell(extraInfoFirstCell);
 
@@ -243,9 +312,6 @@ public class PdfFactory {
                         infoCell = new PdfPCell(new Phrase(shift.getExtraInfo(), smallFont));
                     else infoCell = new PdfPCell(new Phrase("-", font));
 
-                    if (shift.getWeekDay() == Shift.MAANDAG) infoCell.setBorderWidthLeft(1f);
-                    if (shift.getWeekDay() == Shift.ZONDAG) infoCell.setBorderWidthRight(1f);
-                    infoCell.setBorderWidthBottom(1f);
                     infoCell.setPaddingBottom(3f);
                     infoCell.setHorizontalAlignment(Element.ALIGN_CENTER);
                     table.addCell(infoCell);
@@ -437,13 +503,36 @@ public class PdfFactory {
     }
 
     private void sendPdf(File file) {
-        Intent intent = new Intent(Intent.ACTION_VIEW);
         Uri uri1 = FileProvider.getUriForFile(context, context.getPackageName() + ".provider", file);
-        intent.setDataAndType(uri1, "application/pdf");
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        if (Tools.DEBUG) {
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setDataAndType(uri1, "application/pdf");
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
-        activity.startActivity(intent);
+            activity.startActivity(intent);
+            return;
+        }
+
+        Intent mailIntent = new Intent(Intent.ACTION_SEND);
+        mailIntent.setType("message/rfc822");
+        mailIntent.putExtra(Intent.EXTRA_SUBJECT, "Rooster week " + activity.weekNumber);
+        mailIntent.putExtra(Intent.EXTRA_EMAIL, "@ns.nl");
+        mailIntent.putExtra(Intent.EXTRA_STREAM, uri1);
+        StringBuilder addresses = new StringBuilder("Mailadressen aspiranten + mentoren: \n\n");
+
+        for (Map.Entry<String, Pupil> set : pupilsMap.entrySet()) {
+            Pupil pupil = set.getValue();
+            if (!pupil.getEmail().equals("")) addresses.append(pupil.getEmail()).append(", ");
+        }
+
+        for (Map.Entry<String, Mentor> set : mentorsMap.entrySet()) {
+            Mentor mentor = set.getValue();
+            if (!mentor.getEmail().equals("")) addresses.append(mentor.getEmail()).append(", ");
+        }
+
+        mailIntent.putExtra(Intent.EXTRA_TEXT, addresses.toString());
+        activity.startActivity(mailIntent);
     }
 
 }
