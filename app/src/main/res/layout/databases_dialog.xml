@@ -29,7 +29,6 @@
         android:hint="Aspiranten database in JSON-code">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:lines="2"
             android:layout_width="match_parent"
             android:layout_height="200dp"
             />
@@ -44,7 +43,6 @@
         android:hint="Mentoren database in JSON-code">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:lines="2"
             android:layout_width="match_parent"
             android:layout_height="200dp"
             />

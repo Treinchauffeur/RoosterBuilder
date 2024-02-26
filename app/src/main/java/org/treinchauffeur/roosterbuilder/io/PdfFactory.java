@@ -2,28 +2,22 @@ package org.treinchauffeur.roosterbuilder.io;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.util.Log;
 
 import androidx.core.content.FileProvider;
 
 import com.google.android.material.snackbar.Snackbar;
-import com.lowagie.text.BadElementException;
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Element;
 import com.lowagie.text.Font;
 import com.lowagie.text.FontFactory;
-import com.lowagie.text.Image;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.Phrase;
 import com.lowagie.text.Rectangle;
-import com.lowagie.text.pdf.BaseFont;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
@@ -57,14 +51,11 @@ public class PdfFactory {
 
     public static final String TAG = "PdfFactory";
 
-    private Context context;
-    private MainActivity activity;
-    private AssetManager assets;
+    private final Context context;
+    private final MainActivity activity;
     private final String path, fileName; //Initialized in constructor; environment-specific values.
-    private TreeMap<String, Pupil> pupilsMap;
-    private TreeMap<String, Mentor> mentorsMap;
-
-    private PdfWriter pdfWriter;
+    private final TreeMap<String, Pupil> pupilsMap;
+    private final TreeMap<String, Mentor> mentorsMap;
 
     public PdfFactory(Context context, MainActivity activity, TreeMap<String, Pupil> pupils, TreeMap<String, Mentor> mentors) {
         this.context = context;
@@ -73,7 +64,7 @@ public class PdfFactory {
         this.mentorsMap = mentors;
         path = Objects.requireNonNull(context.getExternalFilesDir(null)).getPath() + File.separator;
         fileName = "Weekrooster_aspiranten_" + activity.weekNumber + "_" + activity.yearNumber + ".pdf";
-        this.assets = activity.getAssets();
+        activity.getAssets();
         cleanDirectory();
         PDFBoxResourceLoader.init(context);
 
@@ -107,7 +98,7 @@ public class PdfFactory {
         Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16);
 
         try {
-            pdfWriter = PdfWriter.getInstance(document,
+            PdfWriter.getInstance(document,
                     Files.newOutputStream(Paths.get(path + fileName)));
 
             document.open();
@@ -289,7 +280,7 @@ public class PdfFactory {
 
                 for (Shift shift : pupil.getShifts()) {
                     PdfPCell shiftNumberCell = new PdfPCell(new Phrase(shift.getNeatShiftNumber(), font));
-                    if (shift.isRestingDay())
+                    if (shift.isRestingDay() && !shift.shouldHide())
                         shiftNumberCell.setBackgroundColor(new Color(255, 221, 221));
                     else shiftNumberCell.setBackgroundColor(alternatingColor);
 
@@ -324,14 +315,14 @@ public class PdfFactory {
             float[] phoneColumnDefinitionSize = {20, 8.51F, 10, 20, 8.51F};
 
             PdfPTable tablePhone = new PdfPTable(phoneColumnDefinitionSize);
-            PdfPCell cellPhone = null;
+            PdfPCell cellPhone;
 
             tablePhone.setHorizontalAlignment(0);
             tablePhone.setTotalWidth(300);
             tablePhone.setLockedWidth(true);
 
             //We temporarily fill the smallest map with duds, so that we can iterate through them easily..
-            int delta = 0;
+            int delta;
             if (pupilsMap.size() > mentorsMap.size()) {
                 delta = pupilsMap.size() - mentorsMap.size();
                 for (int i = 0; i < delta; i++) {
@@ -504,7 +495,7 @@ public class PdfFactory {
 
     private void sendPdf(File file) {
         Uri uri1 = FileProvider.getUriForFile(context, context.getPackageName() + ".provider", file);
-        if (Tools.DEBUG) {
+        if (Tools.EASYDEBUG) {
             Intent intent = new Intent(Intent.ACTION_VIEW);
             intent.setDataAndType(uri1, "application/pdf");
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

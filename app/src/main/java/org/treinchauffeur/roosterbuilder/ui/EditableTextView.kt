@@ -5,7 +5,6 @@ import android.util.AttributeSet
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.LinearLayout
-import androidx.core.content.ContextCompat.getSystemService
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.textfield.TextInputLayout
@@ -16,7 +15,7 @@ import org.treinchauffeur.roosterbuilder.obj.Pupil
 
 class EditableTextView : LinearLayout {
 
-    private lateinit var context: Context;
+    private var context: Context
     private lateinit var size: String
     private var editable: Boolean = false
     lateinit var editButton: MaterialCardView
@@ -34,6 +33,7 @@ class EditableTextView : LinearLayout {
 
     /**
      * View created programmatically.
+     * @noinspection unused
      */
     constructor(context: Context, pupil: Pupil, size: String) : super(context) {
         this.context = context

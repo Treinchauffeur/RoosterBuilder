@@ -7,7 +7,7 @@ import java.util.Map;
 
 public class Tools {
 
-    public static final boolean DEBUG = false;
+    public static final boolean EASYDEBUG = false;
     public static final String dudText = "ZZ!!DUD!!ZZ";
     public static final String TAG = "Tools";
 
@@ -16,9 +16,24 @@ public class Tools {
      *
      * @param str input String
      * @return is number or not
+     * @noinspection unused
      */
     public static boolean isNumeric(String str) {
         return str.matches("-?\\d+(\\.\\d+)?");
+    }
+    public static boolean containsNumeric(String str) { return str.matches(".*\\d.*");}
+
+    /**
+     * We need to be able to deal with P-shifts. In order to do this, we need to check whether the next
+     * characters in the string array is a shift number. If yes
+     * @param input the string to check.
+     * @return whether this is a shift or not.
+     */
+    public static boolean isShiftNumber(String input) {
+        if (containsNumeric(input)) return true;
+        if (isRestingDay(input)) return true;
+        if (isNonRegularShiftNumber(input)) return true;
+        return false;
     }
 
     /**
@@ -147,7 +162,7 @@ public class Tools {
     }
 
     public static String camelCase(String input) {
-        String output = "";
+        String output;
         output = input.toLowerCase();
         output = output.substring(0, 1).toUpperCase() + output.substring(1);
         return output;

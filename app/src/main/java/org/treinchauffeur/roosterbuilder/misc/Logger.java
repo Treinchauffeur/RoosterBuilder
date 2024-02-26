@@ -12,6 +12,6 @@ public class Logger {
      * @param toLog message to log.
      */
     public static void debug(String TAG, String toLog) {
-        if(Tools.DEBUG) Log.d(TAG, toLog);
+        Log.d(TAG, toLog);
     }
 }

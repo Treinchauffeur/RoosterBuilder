@@ -125,8 +125,7 @@ public class Shift {
         else if(shiftNumber.endsWith("E"))
             return "Es "+modifier+shiftNumber.substring(0, shiftNumber.length()-1);
         if(shiftNumber.toUpperCase().contains("TWO")) return shiftNumber;
-        if(shiftNumber.equalsIgnoreCase("Z")) return "-"; //Hide these
-        if(shiftNumber.equalsIgnoreCase("BA")) return "-"; //Hide these
+        if(shouldHide()) return "-"; //Hide these
         if(shiftNumber.equalsIgnoreCase("P")) return "Praktijk";
         if(shiftNumber.equalsIgnoreCase("W")) return "Wegleren";
         if(shiftNumber.equalsIgnoreCase("VL")) return "Verlof";
@@ -143,6 +142,20 @@ public class Shift {
             return "Es "+modifier+shiftNumber;
         else {
             return modifier + shiftNumber;
+        }
+    }
+
+    public boolean shouldHide() {
+        switch(shiftNumber.toUpperCase()) {
+            case "Z":
+            case "BA":
+            case "CV":
+            case "EG":
+            case "KZV":
+            case "LZV":
+                return true;
+            default:
+                return false;
         }
     }
 
@@ -163,9 +176,7 @@ public class Shift {
         }
 
         //Too convoluted
-        if(extraInfo.length() > 25 && !withMentor()) return true;
-
-        return false;
+        return extraInfo.length() > 25 && !withMentor();
     }
 
     public boolean isRestingDay() {

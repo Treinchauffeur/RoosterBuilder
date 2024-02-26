@@ -5,6 +5,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
@@ -98,7 +99,7 @@ public class PupilDialog extends Dialog {
         buttonSave.setOnClickListener(v -> {
 
             //Save full name
-            if(fullNameField.getEditText().getText().toString().length() > pupil.getName().length()) {
+            if(fullNameField.getEditText().getText().toString().length() > pupil.getName().length() / 2) {
                 Objects.requireNonNull(activity.pupilsMap.get(pupil.getName())).setNeatName(fullNameField.getEditText().getText().toString());
                 Objects.requireNonNull(activity.savedPupils.get(pupil.getName())).setNeatName(fullNameField.getEditText().getText().toString());
                 activity.saveData();
@@ -113,26 +114,34 @@ public class PupilDialog extends Dialog {
                 Objects.requireNonNull(activity.savedPupils.get(pupil.getName())).setPhone(phoneNumberField.getEditText().getText().toString());
                 activity.saveData();
             } else {
-                phoneNumberField.setError("Formaat: 0612345678");
-                return;
+                Toast.makeText(context, "Telefoonnummer formaat incorrect: 0612345678", Toast.LENGTH_SHORT).show();
+                //phoneNumberField.setError("Formaat: 0612345678");
+                //return;
             }
 
             //Save email
             if(!emailField.getEditText().getText().toString().endsWith("@ns.nl")) {
-                emailField.setError("E-mailadres eindigt niet op '@ns.nl'");
-                return;
+                Toast.makeText(context, "E-mailadres eindigt niet op '@ns.nl'", Toast.LENGTH_SHORT).show();
+                //emailField.setError("E-mailadres eindigt niet op '@ns.nl'");
+                //return;
             } else if(emailField.getEditText().getText().toString().length() < (pupil.getName().split(" ")[0].length() + 6)) {
-                emailField.setError("E-mailadres is te kort");
-                return;
+                Toast.makeText(context, "E-mailadres is te kort", Toast.LENGTH_SHORT).show();
+                //emailField.setError("E-mailadres is te kort");
+                //return;
             } else {
                 Objects.requireNonNull(activity.pupilsMap.get(pupil.getName())).setEmail(emailField.getEditText().getText().toString());
                 Objects.requireNonNull(activity.savedPupils.get(pupil.getName())).setEmail(emailField.getEditText().getText().toString());
                 activity.saveData();
             }
 
-            dismiss();
-            activity.displayData();
+            if(Objects.requireNonNull(activity.pupilsMap.get(pupil.getName())).getEmail().equals("")
+                    || Objects.requireNonNull(activity.pupilsMap.get(pupil.getName())).getPhoneNumber().equals("")) {
+                Toast.makeText(context, "Opgeslagen ondanks missende gegevens.", Toast.LENGTH_SHORT).show();
+            }
+
+            activity.displayDataNoDialog();
             activity.saveData();
+            dismiss();
         });
 
         buttonCancel.setOnClickListener(v -> dismiss());

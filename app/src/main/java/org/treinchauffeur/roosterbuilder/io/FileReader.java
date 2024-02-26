@@ -23,7 +23,7 @@ import java.util.Map;
 
 public class FileReader {
 
-    private static ArrayList<String> fileContents = new ArrayList<>();
+    private static final ArrayList<String> fileContents = new ArrayList<>();
     private static final String TAG = "FileReader";
     public static final int REASON_FAILED_READ = 1, REASON_FAILED_PROCESS = 2;
     @SuppressLint("SimpleDateFormat")
@@ -129,7 +129,7 @@ public class FileReader {
         }
 
         Pupil tempPupil = null;
-        String pupilName = "";
+        String pupilName;
         for(String rawLine : filteredContents) {
             String formattedLine = rawLine.replaceAll("\\s+", " ");
             //Secondary portion of the file; these shifts are special or contain extra information like a mentor etc.
@@ -283,7 +283,10 @@ public class FileReader {
                         Pupil pupil = new Pupil(name);
                         formattedLine = formattedLine.split(name + " ")[1];
 
-                        if(Tools.isShiftModifier(formattedLine.split(" ")[0]) && formattedLine.split(" ").length > 6) {
+                        if(Tools.isShiftModifier(formattedLine.split(" ")[0]) &&//true
+                                formattedLine.split(" ").length > 6 && //true
+                                (Tools.containsNumeric(formattedLine.split(" ")[1]) || //false
+                                        !Tools.isRestingDay(formattedLine.split(" ")[1]))) {
                             mondayShift.setModifier(formattedLine.split(" ")[0]);
                             formattedLine = formattedLine.substring(formattedLine.split(" ")[0].length() + 1);
                         }
@@ -291,7 +294,10 @@ public class FileReader {
                         mondayShift.setShiftNumber(formattedLine.split(" ")[0]);
                         formattedLine = formattedLine.substring(formattedLine.split(" ")[0].length() + 1);
 
-                        if(Tools.isShiftModifier(formattedLine.split(" ")[0]) && formattedLine.split(" ").length > 6) {
+                        if(Tools.isShiftModifier(formattedLine.split(" ")[0])  &&
+                                formattedLine.split(" ").length > 6 &&
+                                (Tools.containsNumeric(formattedLine.split(" ")[1]) ||
+                                        !Tools.isRestingDay(formattedLine.split(" ")[1]))) {
                             tuesdayShift.setModifier(formattedLine.split(" ")[0]);
                             formattedLine = formattedLine.substring(formattedLine.split(" ")[0].length() + 1);
                         }
@@ -299,7 +305,10 @@ public class FileReader {
                         tuesdayShift.setShiftNumber(formattedLine.split(" ")[0]);
                         formattedLine = formattedLine.substring(formattedLine.split(" ")[0].length() + 1);
 
-                        if(Tools.isShiftModifier(formattedLine.split(" ")[0]) && formattedLine.split(" ").length > 5) {
+                        if(Tools.isShiftModifier(formattedLine.split(" ")[0])  &&
+                                formattedLine.split(" ").length > 5 &&
+                                (Tools.containsNumeric(formattedLine.split(" ")[1]) ||
+                                        !Tools.isRestingDay(formattedLine.split(" ")[1]))) {
                             wednesdayShift.setModifier(formattedLine.split(" ")[0]);
                             formattedLine = formattedLine.substring(formattedLine.split(" ")[0].length() + 1);
                         }
@@ -307,7 +316,10 @@ public class FileReader {
                         wednesdayShift.setShiftNumber(formattedLine.split(" ")[0]);
                         formattedLine = formattedLine.substring(formattedLine.split(" ")[0].length() + 1);
 
-                        if(Tools.isShiftModifier(formattedLine.split(" ")[0]) && formattedLine.split(" ").length > 4) {
+                        if(Tools.isShiftModifier(formattedLine.split(" ")[0])  &&
+                                formattedLine.split(" ").length > 4 &&
+                                (Tools.containsNumeric(formattedLine.split(" ")[1]) ||
+                                        !Tools.isRestingDay(formattedLine.split(" ")[1]))) {
                             thursdayShift.setModifier(formattedLine.split(" ")[0]);
                             formattedLine = formattedLine.substring(formattedLine.split(" ")[0].length() + 1);
                         }
@@ -315,7 +327,10 @@ public class FileReader {
                         thursdayShift.setShiftNumber(formattedLine.split(" ")[0]);
                         formattedLine = formattedLine.substring(formattedLine.split(" ")[0].length() + 1);
 
-                        if(Tools.isShiftModifier(formattedLine.split(" ")[0]) && formattedLine.split(" ").length > 3) {
+                        if(Tools.isShiftModifier(formattedLine.split(" ")[0])  &&
+                                formattedLine.split(" ").length > 3 &&
+                                (Tools.containsNumeric(formattedLine.split(" ")[1]) ||
+                                        !Tools.isRestingDay(formattedLine.split(" ")[1]))) {
                             fridayShift.setModifier(formattedLine.split(" ")[0]);
                             formattedLine = formattedLine.substring(formattedLine.split(" ")[0].length() + 1);
                         }
@@ -323,7 +338,10 @@ public class FileReader {
                         fridayShift.setShiftNumber(formattedLine.split(" ")[0]);
                         formattedLine = formattedLine.substring(formattedLine.split(" ")[0].length() + 1);
 
-                        if(Tools.isShiftModifier(formattedLine.split(" ")[0]) && formattedLine.split(" ").length > 2) {
+                        if(Tools.isShiftModifier(formattedLine.split(" ")[0]) &&
+                                formattedLine.split(" ").length > 2 &&
+                                (Tools.containsNumeric(formattedLine.split(" ")[1]) ||
+                                        !Tools.isRestingDay(formattedLine.split(" ")[1]))) {
                             saturdayShift.setModifier(formattedLine.split(" ")[0]);
                             formattedLine = formattedLine.substring(formattedLine.split(" ")[0].length() + 1);
                         }
@@ -331,7 +349,10 @@ public class FileReader {
                         saturdayShift.setShiftNumber(formattedLine.split(" ")[0]);
                         formattedLine = formattedLine.substring(formattedLine.split(" ")[0].length() + 1);
 
-                        if(Tools.isShiftModifier(formattedLine.split(" ")[0]) && formattedLine.split(" ").length > 1) {
+                        if(Tools.isShiftModifier(formattedLine.split(" ")[0]) &&
+                                formattedLine.split(" ").length > 1 &&
+                                (Tools.containsNumeric(formattedLine.split(" ")[1]) ||
+                                        !Tools.isRestingDay(formattedLine.split(" ")[1]))) {
                             sundayShift.setModifier(formattedLine.split(" ")[0]);
                             formattedLine = formattedLine.substring(formattedLine.split(" ")[0].length() + 1);
                         }

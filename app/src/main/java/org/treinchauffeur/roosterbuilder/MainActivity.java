@@ -6,10 +6,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -157,13 +155,13 @@ public class MainActivity extends AppCompatActivity {
                 //Let's initialize them, weekends SHOULD BE days off by default
                 for (int j = 0; j < group.getChildCount(); j++) {
                     MaterialButton button = (MaterialButton) group.getChildAt(j);
-                    if(day < 5) {
-                        if(button.getText().toString().contains("Aanwezig")) {
+                    if (day < 5) {
+                        if (button.getText().toString().contains("Aanwezig")) {
                             Objects.requireNonNull(managersMap.get("ManagerOne")).setAvailability(day, button.getText().toString());
                             button.setChecked(true);
                         }
                     } else {
-                        if(button.getText().toString().contains("Rust")) {
+                        if (button.getText().toString().contains("Rust")) {
                             Objects.requireNonNull(managersMap.get("ManagerOne")).setAvailability(day, button.getText().toString());
                             button.setChecked(true);
                         }
@@ -172,12 +170,10 @@ public class MainActivity extends AppCompatActivity {
                 day++;
             }
 
-            if(v instanceof EditableTextView) {
+            if (v instanceof EditableTextView) {
                 EditableTextView etv = (EditableTextView) v;
                 etv.setName(managerOneName);
-                etv.editButton.setOnClickListener(view -> {
-                    etv.setEditable(true);
-                });
+                etv.editButton.setOnClickListener(view -> etv.setEditable(true));
                 etv.saveButton.setOnClickListener(view -> {
                     etv.setEditable(false);
                     Objects.requireNonNull(managersMap.get("ManagerOne")).setName(etv.getText());
@@ -193,11 +189,11 @@ public class MainActivity extends AppCompatActivity {
         secondManagerToggle.setOnCheckedChangeListener((buttonView, isChecked) -> {
             twoManagers = isChecked;
             saveData();
-            if(!twoManagers) managerTwoLayout.setVisibility(View.GONE);
+            if (!twoManagers) managerTwoLayout.setVisibility(View.GONE);
             else managerTwoLayout.setVisibility(View.VISIBLE);
         });
 
-        if(!twoManagers) managerTwoLayout.setVisibility(View.GONE);
+        if (!twoManagers) managerTwoLayout.setVisibility(View.GONE);
         Manager managerTwo = new Manager("ManagerTwo");
         managerTwo.setName(managerTwoName);
         managersMap.put("ManagerTwo", managerTwo);
@@ -226,13 +222,13 @@ public class MainActivity extends AppCompatActivity {
                 //Let's initialize them, weekends SHOULD BE days off by default
                 for (int j = 0; j < group.getChildCount(); j++) {
                     MaterialButton button = (MaterialButton) group.getChildAt(j);
-                    if(day < 5) {
-                        if(button.getText().toString().contains("Aanwezig")) {
+                    if (day < 5) {
+                        if (button.getText().toString().contains("Aanwezig")) {
                             Objects.requireNonNull(managersMap.get("ManagerTwo")).setAvailability(day, button.getText().toString());
                             button.setChecked(true);
                         }
                     } else {
-                        if(button.getText().toString().contains("Rust")) {
+                        if (button.getText().toString().contains("Rust")) {
                             Objects.requireNonNull(managersMap.get("ManagerTwo")).setAvailability(day, button.getText().toString());
                             button.setChecked(true);
                         }
@@ -241,12 +237,10 @@ public class MainActivity extends AppCompatActivity {
                 day++;
             }
 
-            if(v instanceof EditableTextView) {
+            if (v instanceof EditableTextView) {
                 EditableTextView etv = (EditableTextView) v;
                 etv.setName(managerTwoName);
-                etv.editButton.setOnClickListener(view -> {
-                    etv.setEditable(true);
-                });
+                etv.editButton.setOnClickListener(view -> etv.setEditable(true));
                 etv.saveButton.setOnClickListener(view -> {
                     etv.setEditable(false);
                     Objects.requireNonNull(managersMap.get("ManagerTwo")).setName(etv.getText());
@@ -280,6 +274,145 @@ public class MainActivity extends AppCompatActivity {
         fileReader.startReading(uri);
         syncSavedPupils();
         displayData();
+    }
+
+    @SuppressLint("SetTextI18n")
+    public void displayDataNoDialog() {
+        if (pupilsMap.size() > 0) {
+            mainCardView.setVisibility(View.VISIBLE);
+            saveButton.setVisibility(View.VISIBLE);
+            bottomButtonsLayout.setVisibility(View.VISIBLE);
+            selectButton.setVisibility(View.GONE);
+
+            if (weekNumber != -1) {
+                weekText.setText("Week " + weekNumber + " van jaar " + yearNumber);
+                pupilsText.setText("Aspiranten (" + pupilsMap.size() + "):");
+                mentorsText.setText("Mentoren (" + mentorsMap.size() + "):");
+            }
+
+            pupilsLayout.removeAllViews();
+            TreeMap<String, Pupil> sortedPupilMap = new TreeMap<>(pupilsMap);
+
+            for (Map.Entry<String, Pupil> set : sortedPupilMap.entrySet()) {
+                Pupil pupil = set.getValue();
+
+                Chip newChip = new Chip(this);
+                newChip.setText(pupil.getNeatName());
+                newChip.setChipStartPadding(0);
+                newChip.setChipEndPadding(0);
+                newChip.setCheckable(true);
+                newChip.setChecked(true);
+
+                if (pupil.hasWeekOff()) {
+                    newChip.setChecked(false);
+                    pupil.shouldDisplay(false);
+                }
+
+                newChip.setOnClickListener(v -> {
+                    PupilDialog dialog = new PupilDialog(this, MainActivity.this, pupil);
+                    dialog.show();
+                    newChip.setChecked(pupil.getShouldDisplay());
+                });
+
+                newChip.setOnLongClickListener(v -> {
+                    if (newChip.isChecked()) {
+                        newChip.setChecked(false);
+                        pupil.shouldDisplay(false);
+                    } else {
+                        newChip.setChecked(true);
+                        pupil.shouldDisplay(true);
+                    }
+                    return true;
+                });
+
+                LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT);
+
+                params.setMargins(5, 0, 5, 0);
+                newChip.setLayoutParams(params);
+
+                if (savedPupils.containsKey(pupil.getName())) {
+                    StoredPupil saved = savedPupils.get(pupil.getName());
+                    if (Objects.requireNonNull(saved).getPhone().equals(""))
+                        newChip.setError("");
+                    if (saved.getEmail().equals(""))
+                        newChip.setError("");
+                } else newChip.setError("");
+
+                pupilsLayout.addView(newChip);
+            }
+
+            mentorsLayout.removeAllViews();
+            TreeMap<String, Mentor> sortedMentorMap = new TreeMap<>();
+
+            //Sorting the mentors, since sorting them by id is a but useless..
+            for (Map.Entry<String, Mentor> set : mentorsMap.entrySet()) {
+                Mentor mentor = set.getValue();
+                sortedMentorMap.put(mentor.getName(), mentor);
+            }
+
+            for (Map.Entry<String, Mentor> set : sortedMentorMap.entrySet()) {
+                Mentor mentor = set.getValue();
+
+                Chip newChip = new Chip(this);
+                if (mentor.getNeatName().equals(""))
+                    newChip.setText(mentor.getName());
+                else newChip.setText(mentor.getNeatName());
+
+                newChip.setChipStartPadding(0);
+                newChip.setChipEndPadding(0);
+
+                newChip.setOnClickListener(v -> {
+                    MentorDialog dialog = new MentorDialog(this, MainActivity.this, mentor);
+                    Logger.debug(TAG, mentor.getId() + ": " + mentor.getName() + " - " + mentor.getEmail());
+                    dialog.show();
+                });
+
+                newChip.setOnLongClickListener(v -> {
+                    DeleteDialog deleteDialog = new DeleteDialog(this) {
+                        @Override
+                        public void onDeletePressed() {
+                            mentorsMap.remove(mentor.getId());
+                            saveData();
+                            displayDataNoDialog();
+                            dismiss();
+                        }
+                    };
+
+                    deleteDialog.setMainText("Wil je '" + mentor.getNeatName() + "' uit de lijst van opgeslagen mentoren wilt verwijderen?");
+                    deleteDialog.show();
+                    return false;
+                });
+
+                LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT);
+
+                params.setMargins(5, 0, 5, 0);
+                newChip.setLayoutParams(params);
+
+                if (mentor.getPhoneNumber().equals("")) {
+                    newChip.setError("");
+                }
+                if (mentor.getEmail().equals("")) {
+                    newChip.setError("");
+                }
+
+                mentorsLayout.addView(newChip);
+            }
+
+            //We're doing all this here, because this way we're sure all the variables will have been set correctly.
+            saveButton.setEnabled(sortedMentorMap.size() > 0 && sortedPupilMap.size() > 0);
+
+            saveButton.setOnClickListener(v -> {
+                PdfFactory pdfFactory = new PdfFactory(this, MainActivity.this, sortedPupilMap, sortedMentorMap);
+                pdfFactory.write();
+            });
+
+        } else {
+            Toast.makeText(this, "Er is een fout opgetreden! 0900-BEL-POLSKI", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @SuppressLint("SetTextI18n")
@@ -435,15 +568,15 @@ public class MainActivity extends AppCompatActivity {
                             "Deze worden aangegeven middels een uitroepteken naast hun naam.");
 
                 dialog.show();
-
-                //We're doing all this here, because this way we're sure all the variables will have been set correctly.
-                saveButton.setEnabled(sortedMentorMap.size() > 0 && sortedPupilMap.size() > 0);
-
-                saveButton.setOnClickListener(v -> {
-                    PdfFactory pdfFactory = new PdfFactory(this, MainActivity.this, sortedPupilMap, sortedMentorMap);
-                    pdfFactory.write();
-                });
             }
+
+            //We're doing all this here, because this way we're sure all the variables will have been set correctly.
+            saveButton.setEnabled(sortedMentorMap.size() > 0 && sortedPupilMap.size() > 0);
+
+            saveButton.setOnClickListener(v -> {
+                PdfFactory pdfFactory = new PdfFactory(this, MainActivity.this, sortedPupilMap, sortedMentorMap);
+                pdfFactory.write();
+            });
         } else {
             Toast.makeText(this, "Er is een fout opgetreden! 0900-BEL-POLSKI", Toast.LENGTH_SHORT).show();
         }
