@@ -9,6 +9,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.ContactsContract;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.widget.Toast;
@@ -26,6 +27,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.treinchauffeur.roosterbuilder.MainActivity;
 import org.treinchauffeur.roosterbuilder.R;
+import org.treinchauffeur.roosterbuilder.io.DatabaseHandler;
 import org.treinchauffeur.roosterbuilder.misc.Logger;
 import org.treinchauffeur.roosterbuilder.obj.Mentor;
 import org.treinchauffeur.roosterbuilder.obj.Pupil;
@@ -38,88 +40,60 @@ import java.util.Objects;
 public class DatabaseDialog extends Dialog {
 
     public static final String TAG = "PupilDialog";
+    private final DatabaseHandler databaseHandler;
+    private MaterialButton importPupilButton, exportPupilButton, importMentorButton, exportMentorButton;
+
+    private String pupilString, mentorString;
+
     @SuppressLint("SetTextI18n")
     public DatabaseDialog(@NonNull Context context, MainActivity activity) {
         super(context);
+        databaseHandler = new DatabaseHandler(context, activity);
         setContentView(R.layout.databases_dialog);
         Objects.requireNonNull(getWindow()).setBackgroundDrawableResource(android.R.color.transparent);
 
-        TextInputLayout pupilsField = findViewById(R.id.pupilsDatabaseField);
-        TextInputLayout mentorField = findViewById(R.id.mentorDatabaseField);
+        importPupilButton = findViewById(R.id.pupil_import_button);
+        exportPupilButton = findViewById(R.id.pupil_export_button);
+        importMentorButton = findViewById(R.id.mentor_import_button);
+        exportMentorButton = findViewById(R.id.mentor_export_button);
 
         MaterialButton buttonSave, buttonCancel;
-        buttonSave = findViewById(R.id.buttonSaveDatabase);
         buttonCancel = findViewById(R.id.buttonCancelDatabase);
 
         SharedPreferences sharedPreferences = context.getSharedPreferences("RoosterBot", Context.MODE_PRIVATE);
         String defValue = new Gson().toJson(new HashMap<String, StoredPupil>());
-        String json=sharedPreferences.getString("SavedPupilsMap",defValue);
-        Objects.requireNonNull(pupilsField.getEditText()).setText(json);
+        pupilString = sharedPreferences.getString("SavedPupilsMap",defValue);
 
         String mentorValue = new Gson().toJson(new HashMap<String, Mentor>());
-        String mentorJson = sharedPreferences.getString("SavedMentorMap",mentorValue);
-        Objects.requireNonNull(mentorField.getEditText()).setText(mentorJson);
+        mentorString = sharedPreferences.getString("SavedMentorMap",mentorValue);
 
         //Button actions
-        buttonSave.setOnClickListener(v -> {
-            if (!isJson(Objects.requireNonNull(pupilsField.getEditText()).getText().toString())) {
-                pupilsField.setError("Geen geldige JSON");
-                return;
-            }
+        exportPupilButton.setOnClickListener(v -> {
+            dismiss();
+            databaseHandler.exportPupils();
+        });
 
-            if (!isJson(Objects.requireNonNull(mentorField.getEditText()).getText().toString())) {
-                mentorField.setError("Geen geldige JSON");
-                return;
-            }
+        exportMentorButton.setOnClickListener(v -> {
+            dismiss();
+            databaseHandler.exportMentors();
+        });
 
-            String jsonString = Objects.requireNonNull(pupilsField.getEditText()).getText().toString();
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putString("SavedPupilsMap", jsonString);
-            String mentorString = Objects.requireNonNull(mentorField.getEditText()).getText().toString();
-            editor.putString("SavedMentorMap", mentorString);
+        importPupilButton.setOnClickListener(v -> {
+            dismiss();
+            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            intent.setType("application/json");
+            activity.startActivityForResult(intent, MainActivity.IMPORT_REQUEST_CODE_PUPILS);
+        });
 
-            editor.apply();
-
-            Toast.makeText(context, "De app wordt opnieuw opgestart.", Toast.LENGTH_SHORT).show();
-
-            buttonCancel.setEnabled(false);
-            buttonSave.setEnabled(false);
-
-            //We need to make sure that the json has been saved properly, therefore we require a delay.
-            final Handler handler = new Handler(Looper.getMainLooper());
-            handler.postDelayed(() -> restartApp(context), 3000);
-
-            //activity.syncSavedPupils();
-            if(activity.pupilsMap.size() > 2)
-                activity.displayData();
+        importMentorButton.setOnClickListener(v -> {
+            dismiss();
+            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            intent.setType("application/json");
+            activity.startActivityForResult(intent, MainActivity.IMPORT_REQUEST_CODE_MENTORS);
         });
 
         buttonCancel.setOnClickListener(v -> dismiss());
-    }
-
-    public static boolean isJson(String json) {
-        try {
-            new JSONObject(json);
-        } catch (JSONException ex) {
-            try {
-                new JSONArray(json);
-            } catch (JSONException ex1) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    public static void restartApp(Context context) {
-        PackageManager packageManager = context.getPackageManager();
-        Intent intent = packageManager.getLaunchIntentForPackage(context.getPackageName());
-        assert intent != null;
-        ComponentName componentName = intent.getComponent();
-        Intent mainIntent = Intent.makeRestartActivityTask(componentName);
-        // Required for API 34 and later
-        // Ref: https://developer.android.com/about/versions/14/behavior-changes-14#safer-intents
-        mainIntent.setPackage(context.getPackageName());
-        context.startActivity(mainIntent);
-        Runtime.getRuntime().exit(0);
     }
 }

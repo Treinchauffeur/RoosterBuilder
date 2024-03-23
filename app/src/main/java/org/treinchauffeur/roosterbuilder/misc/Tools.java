@@ -1,5 +1,8 @@
 package org.treinchauffeur.roosterbuilder.misc;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.treinchauffeur.roosterbuilder.obj.Mentor;
 import org.treinchauffeur.roosterbuilder.obj.Pupil;
 
@@ -182,5 +185,18 @@ public class Tools {
         height += pupils.size() * 2 * rowHeight;
         height += biggestSize * rowHeight;
         return height;
+    }
+
+    public static boolean isJson(String json) {
+        try {
+            new JSONObject(json);
+        } catch (JSONException ex) {
+            try {
+                new JSONArray(json);
+            } catch (JSONException ex1) {
+                return false;
+            }
+        }
+        return true;
     }
 }

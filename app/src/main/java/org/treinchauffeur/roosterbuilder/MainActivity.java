@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -25,6 +26,7 @@ import com.google.android.material.textview.MaterialTextView;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import org.treinchauffeur.roosterbuilder.io.DatabaseHandler;
 import org.treinchauffeur.roosterbuilder.io.FileReader;
 import org.treinchauffeur.roosterbuilder.io.PdfFactory;
 import org.treinchauffeur.roosterbuilder.misc.Logger;
@@ -39,6 +41,10 @@ import org.treinchauffeur.roosterbuilder.ui.InfoDialog;
 import org.treinchauffeur.roosterbuilder.ui.MentorDialog;
 import org.treinchauffeur.roosterbuilder.ui.PupilDialog;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -46,7 +52,9 @@ import java.util.TreeMap;
 
 public class MainActivity extends AppCompatActivity {
 
-    public static final int PICK_FILE_REQUEST = 1312;
+    public static final int PICK_FILE_REQUEST = 1312, JSON_REQUEST_CODE_PUPILS = 1759,
+            JSON_REQUEST_CODE_MENTORS = 1607, IMPORT_REQUEST_CODE_PUPILS = 9999,
+            IMPORT_REQUEST_CODE_MENTORS = 8888;
     private static final String TAG = "MainActivity";
     public int weekNumber = -1, yearNumber = -1;
     public Button selectButton, saveButton, resetButton;
@@ -60,10 +68,9 @@ public class MainActivity extends AppCompatActivity {
 
     public final HashMap<String, Manager> managersMap = new HashMap<>(); //Name as key
     public final HashMap<String, Pupil> pupilsMap = new HashMap<>(); //Name as key
-
     public static final HashMap<String, Mentor> mentorsMap = new HashMap<>(); //Id as key.
-
     public HashMap<String, StoredPupil> savedPupils = new HashMap<>();
+    private DatabaseHandler databaseHandler;
 
     public String managerOneName, managerTwoName;
     public boolean twoManagers = false;
@@ -74,6 +81,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         fileReader = new FileReader(this, MainActivity.this);
+        databaseHandler = new DatabaseHandler(this, MainActivity.this);
         MaterialToolbar toolbar = findViewById(R.id.toolbar);
         Context context = this;
         toolbar.getMenu().getItem(0).setOnMenuItemClickListener(item -> {
@@ -265,6 +273,17 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == PICK_FILE_REQUEST && resultCode == RESULT_OK && intent != null) {
             Uri fileUri = intent.getData();
             fileReceived(fileUri);
+        } else if(requestCode == JSON_REQUEST_CODE_PUPILS && resultCode == RESULT_OK && intent != null) {
+            databaseHandler.writeFile(intent.getData(), new Gson().toJson(savedPupils));
+        }
+        else if(requestCode == JSON_REQUEST_CODE_MENTORS && resultCode == RESULT_OK && intent != null) {
+            databaseHandler.writeFile(intent.getData(), new Gson().toJson(mentorsMap));
+        }
+        else if(requestCode == IMPORT_REQUEST_CODE_PUPILS && resultCode == RESULT_OK && intent != null) {
+            databaseHandler.importPupils(intent.getData());
+        }
+        else if(requestCode == IMPORT_REQUEST_CODE_MENTORS && resultCode == RESULT_OK && intent != null) {
+            databaseHandler.importMentors(intent.getData());
         }
     }
 
@@ -622,18 +641,21 @@ public class MainActivity extends AppCompatActivity {
      */
     public void saveData() {
         SharedPreferences sharedPreferences = this.getSharedPreferences("RoosterBot", MODE_PRIVATE);
-        String jsonString = new Gson().toJson(savedPupils);
-        Logger.debug(TAG, "Saving pupils: " + jsonString);
+        String pupilsString = new Gson().toJson(savedPupils);
+        Logger.debug(TAG, "Saving pupils: " + pupilsString);
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString("SavedPupilsMap", jsonString);
-        editor.putString("ManagerOneName", managerOneName);
-        editor.putString("ManagerTwoName", managerTwoName);
-        editor.putBoolean("TwoManagers", twoManagers);
+        editor.putString("SavedPupilsMap", pupilsString);
 
         String mentorString = new Gson().toJson(mentorsMap);
         Logger.debug(TAG, "Saving mentors: " + mentorString);
         editor.putString("SavedMentorMap", mentorString);
+
+        editor.putString("ManagerOneName", managerOneName);
+        editor.putString("ManagerTwoName", managerTwoName);
+        editor.putBoolean("TwoManagers", twoManagers);
         editor.apply();
+
+        databaseHandler.saveData();
     }
 
     /**
