@@ -17,7 +17,7 @@ public class InfoDialog extends Dialog {
     private final MaterialTextView mainText;
 
     /**
-     * A generic material you deletion dialog that can be used in all kinds of different applications.
+     * A generic Material You dialog that can be used in all kinds of different applications.
      * @param context the app's context
      */
     @SuppressLint("SetTextI18n")

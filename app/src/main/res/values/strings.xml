@@ -2,5 +2,12 @@
     <string name="app_name">RoosterBot</string>
     <string name="pdfTopText" translatable="false">In dit bestand kan je een rooster vinden die voor alle aspiranten geldt. Hierin kunnen jullie het weekoverzicht zien van jezelf en je collega’s. Ook zijn de telefoonnummers van jullie en jullie mentoren toegevoegd. Dit rooster dient als extra hulpmiddel naast jullie normale DW en dient puur als extra informatie. Het is dus bijvoorbeeld niet de bedoeling dat jullie onderling diensten gaan ruilen, dit moet nog steeds via de Dienstindelers. Mocht je op- of aanmerkingen hebben op dit rooster, dan hoor ik dat graag. Feedback is altijd welkom.</string>
     <string name="save">Opslaan</string>
+    <string name="mentoren_database_bestand">Mentoren database-bestand</string>
+    <string name="exporteren">Exporteren</string>
+    <string name="importeren">Importeren</string>
+    <string name="annuleren">ANNULEREN</string>
+    <string name="aspiranten_database_bestand">Aspiranten database-bestand</string>
+    <string name="databases">Databases</string>
+    <string name="sluiten">SLUITEN</string>
 
 </resources>

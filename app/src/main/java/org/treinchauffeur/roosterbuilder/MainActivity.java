@@ -591,7 +591,6 @@ public class MainActivity extends AppCompatActivity {
 
             //We're doing all this here, because this way we're sure all the variables will have been set correctly.
             saveButton.setEnabled(sortedMentorMap.size() > 0 && sortedPupilMap.size() > 0);
-
             saveButton.setOnClickListener(v -> {
                 PdfFactory pdfFactory = new PdfFactory(this, MainActivity.this, sortedPupilMap, sortedMentorMap);
                 pdfFactory.write();
@@ -627,7 +626,6 @@ public class MainActivity extends AppCompatActivity {
 
         for (Map.Entry<String, Mentor> set : mentorsMap.entrySet()) {
             Mentor mentor = set.getValue();
-
             if (tempMap.containsKey(mentor.getId())) {
                 mentor.setNeatName(Objects.requireNonNull(tempMap.get(mentor.getId())).getNeatName());
                 mentor.setEmail(Objects.requireNonNull(tempMap.get(mentor.getId())).getEmail());
@@ -672,7 +670,6 @@ public class MainActivity extends AppCompatActivity {
         selectButton.setVisibility(View.VISIBLE);
 
         fileReader.reset();
-
         loadData();
     }
 
